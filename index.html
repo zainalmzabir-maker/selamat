@@ -12,7 +12,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Face-api.js AI Engine -->
   <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
-  <!-- SheetJS (Library Pembaca Excel / CSV Pukal) -->
+  <!-- SheetJS Library -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col font-sans">
@@ -21,7 +21,7 @@
   <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
       
-      <!-- Logo & Tajuk -->
+      <!-- Logo Sekolah & Tajuk -->
       <div class="flex items-center gap-3">
         <img src="logo.png" alt="Logo Sekolah" class="w-10 h-10 object-contain rounded-md bg-white p-0.5 shadow-sm">
         <div>
@@ -30,7 +30,7 @@
         </div>
       </div>
 
-      <!-- Pilihan Navigasi -->
+      <!-- Menu Navigasi -->
       <nav class="flex flex-wrap items-center gap-1.5 md:gap-2">
         <button onclick="navigasi('rekod')" id="btnNav-rekod" class="px-3 py-1.5 text-xs md:text-sm rounded-lg bg-indigo-900 font-semibold transition">
           Rekod Hadir
@@ -39,13 +39,13 @@
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
           Daftar Wajah
         </button>
-        <button onclick="navigasiDenganKunci('admin-import')" id="btnNav-admin-import" class="px-3 py-1.5 text-xs md:text-sm rounded-lg hover:bg-indigo-600 font-medium transition flex items-center gap-1 bg-indigo-600/60">
+        <button onclick="navigasiDenganKunci('admin-import')" id="btnNav-admin-import" class="px-3 py-1.5 text-xs md:text-sm rounded-lg hover:bg-indigo-600 font-medium transition flex items-center gap-1">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
           Import Pukal
         </button>
         <button onclick="navigasiDenganKunci('admin-aktiviti')" id="btnNav-admin-aktiviti" class="px-3 py-1.5 text-xs md:text-sm rounded-lg hover:bg-indigo-600 font-medium transition flex items-center gap-1">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-          Aktiviti
+          Jadual Aktiviti
         </button>
         <button onclick="navigasi('dashboard')" id="btnNav-dashboard" class="px-3 py-1.5 text-xs md:text-sm rounded-lg hover:bg-indigo-600 font-medium transition">
           Dashboard
@@ -118,7 +118,7 @@
           <!-- Pilihan Aktiviti (Aktif 30 Minit Sebelum) -->
           <div id="kotakAktiviti" class="hidden">
             <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Pilihan Aktiviti (-30 Minit)</label>
-            <select id="selectAktivitiAktif" class="w-full border rounded-lg p-2.5 bg-amber-50 border-amber-300 font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-400">
+            <select id="selectAktivitiAktif" onchange="kemaskiniMaklumatAktivitiSemasa()" class="w-full border rounded-lg p-2.5 bg-amber-50 border-amber-300 font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-400">
               <option value="">-- Menunggu Aktiviti Dibuka --</option>
             </select>
           </div>
@@ -130,6 +130,17 @@
               <option value="user">Kamera Hadapan</option>
               <option value="environment">Kamera Belakang</option>
             </select>
+          </div>
+        </div>
+
+        <!-- Banner Info Kemajuan Kehadiran Aktiviti Semasa -->
+        <div id="bannerKemajuanAktiviti" class="hidden mt-4 p-3 bg-indigo-50 border border-indigo-200 rounded-xl flex flex-wrap items-center justify-between text-xs font-medium text-indigo-900 gap-2">
+          <div>
+            Aktiviti: <span id="namaAktivitiLabel" class="font-bold">-</span>
+          </div>
+          <div>
+            Sasaran Murid: <span id="kiraanSasaranLabel" class="font-bold">0</span> orang | 
+            Telah Hadir: <span id="kiraanHadirAktivitiLabel" class="font-bold text-emerald-600">0</span> orang
           </div>
         </div>
 
@@ -196,7 +207,7 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 3: IMPORT PUKAL MURID (BAHARU) ==================== -->
+    <!-- ==================== TAB 3: IMPORT PUKAL MURID ==================== -->
     <section id="tab-admin-import" class="tab-content hidden">
       <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-3xl mx-auto">
         <div class="flex items-center justify-between mb-4 border-b pb-3">
@@ -207,7 +218,7 @@
           <span class="text-xs bg-indigo-100 text-indigo-800 font-bold px-2.5 py-1 rounded">Mod Pukal</span>
         </div>
 
-        <!-- Pilihan Kaedah Import -->
+        <!-- Kaedah Import -->
         <div class="flex border-b mb-4">
           <button onclick="tukarModImport('fail')" id="btnImportFail" class="px-4 py-2 text-sm font-bold border-b-2 border-indigo-600 text-indigo-700">
             Muat Naik Fail Excel / CSV
@@ -217,20 +228,20 @@
           </button>
         </div>
 
-        <!-- Kaedah 1: Fail Excel / APDM -->
+        <!-- Fail Excel -->
         <div id="kotakImportFail" class="space-y-4">
           <div class="border-2 border-dashed border-indigo-200 rounded-2xl p-6 text-center bg-indigo-50/50 hover:bg-indigo-50 transition cursor-pointer" onclick="document.getElementById('inputFailExcel').click()">
             <svg class="w-10 h-10 text-indigo-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-            <p class="text-sm font-bold text-slate-700">Pilih atau Seret Fail Excel (Contoh: Fail APDM OKT UPLOAD.xlsx)</p>
-            <p class="text-xs text-slate-500 mt-1">Menyokong format .xlsx, .xls, .csv</p>
+            <p class="text-sm font-bold text-slate-700">Pilih atau Seret Fail Excel APDM</p>
+            <p class="text-xs text-slate-500 mt-1">Format disokong: .xlsx, .xls, .csv</p>
             <input type="file" id="inputFailExcel" accept=".xlsx, .xls, .csv" class="hidden" onchange="bacaFailExcel(event)">
           </div>
         </div>
 
-        <!-- Kaedah 2: Text Paste -->
+        <!-- Text Paste -->
         <div id="kotakImportTeks" class="space-y-3 hidden">
           <label class="block text-xs font-semibold uppercase text-slate-500">Tampal Data Murid (Format: Nama, Kelas)</label>
-          <textarea id="inputTeksPukal" rows="6" placeholder="AISSY NAUFAL BIN ROSISKANDAR, 1S1&#10;AISY FATIH AMIRULLAH BIN AZMAN, 1S1&#10;DAMIA AMANI BINTI MOHD SUKRI, 1S1" class="w-full border rounded-xl p-3 text-xs font-mono"></textarea>
+          <textarea id="inputTeksPukal" rows="6" placeholder="AISSY NAUFAL BIN ROSISKANDAR, 1S1&#10;AISY FATIH AMIRULLAH BIN AZMAN, 1S1" class="w-full border rounded-xl p-3 text-xs font-mono"></textarea>
           <button onclick="prosesTeksPukal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg text-xs">
             Proses Senarai Teks
           </button>
@@ -264,26 +275,28 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 4: JADUAL AKTIVITI (ADMIN) ==================== -->
+    <!-- ==================== TAB 4: JADUAL AKTIVITI (PILIHAN KELAS & INDIVIDU) ==================== -->
     <section id="tab-admin-aktiviti" class="tab-content hidden">
-      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-lg mx-auto">
-        <h2 class="text-base font-bold text-slate-800 mb-4">Daftar Aktiviti / Kokurikulum</h2>
-        <form id="formAktiviti" onsubmit="simpanAktiviti(event)" class="space-y-4">
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-4xl mx-auto">
+        <div class="flex items-center justify-between mb-4 border-b pb-3">
           <div>
-            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nama Aktiviti</label>
-            <input type="text" id="actNama" required placeholder="Contoh: Latihan Merentas Desa" class="w-full border rounded-lg p-2.5 text-sm">
+            <h2 class="text-base md:text-lg font-bold text-slate-800">Daftar Jadual Aktiviti & Pilihan Murid</h2>
+            <p class="text-xs text-slate-500">Pilih satu kelas penuh, separuh kelas, atau murid individu merentas kelas (cth: pasukan sukan).</p>
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <span class="text-xs bg-indigo-100 text-indigo-800 font-bold px-2.5 py-1 rounded">Mod Fleksibel</span>
+        </div>
+
+        <form id="formAktiviti" onsubmit="simpanAktiviti(event)" class="space-y-5">
+          <!-- Butiran Asas Aktiviti -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="md:col-span-3">
+              <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nama Aktiviti</label>
+              <input type="text" id="actNama" required placeholder="Contoh: Latihan Bola Sepak Sekolah / Kelas Tambahan Matematik" class="w-full border rounded-lg p-2.5 text-sm font-semibold">
+            </div>
             <div>
               <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Tarikh</label>
               <input type="date" id="actTarikh" required class="w-full border rounded-lg p-2.5 text-sm">
             </div>
-            <div>
-              <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Sasaran Murid / Kelas</label>
-              <input type="text" id="actSasaran" placeholder="Contoh: 1S1, 2S1" class="w-full border rounded-lg p-2.5 text-sm">
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Masa Mula</label>
               <input type="time" id="actMula" required class="w-full border rounded-lg p-2.5 text-sm">
@@ -293,8 +306,49 @@
               <input type="time" id="actTamat" required class="w-full border rounded-lg p-2.5 text-sm">
             </div>
           </div>
-          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg text-sm transition">
-            Simpan Jadual Aktiviti
+
+          <!-- Mod Pemilihan Murid Sasaran -->
+          <div class="border rounded-2xl p-4 bg-slate-50 border-slate-200 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
+              <h3 class="text-sm font-bold text-slate-700">Pilih Murid Yang Terlibat</h3>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold bg-indigo-600 text-white px-2.5 py-1 rounded-full">
+                  <span id="kiraanMuridDipilih">0</span> Murid Dipilih
+                </span>
+                <button type="button" onclick="kosongkanPilihanMuridAktiviti()" class="text-xs text-rose-600 hover:underline font-semibold">
+                  Kosongkan Semua
+                </button>
+              </div>
+            </div>
+
+            <!-- Kaedah 1: Butang Pintas Pilihan Pantas Mengikut Kelas Penuh -->
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-2 uppercase">1. Pilih Mengikut Kelas Penuh (Klik Untuk Pilih / Nyahpilih Semua Murid Kelas Tersebut):</label>
+              <div id="kotakCheckboxKelas" class="flex flex-wrap gap-2">
+                <!-- Checkbox kelas dijana automatik melalui JS -->
+              </div>
+            </div>
+
+            <!-- Kaedah 2: Pilihan Murid Individu / Pasukan Merentas Kelas -->
+            <div class="pt-2 border-t">
+              <label class="block text-xs font-bold text-slate-600 mb-2 uppercase">2. Pilih Murid Secara Individu (Boleh Tapis Ikut Kelas / Cari Nama):</label>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+                <select id="filterKelasPemilihan" onchange="paparkanSenaraiPilihanIndividu()" class="border rounded-lg p-2 text-xs bg-white font-medium">
+                  <option value="">Semua Kelas</option>
+                </select>
+                <input type="text" id="cariNamaPemilihan" oninput="paparkanSenaraiPilihanIndividu()" placeholder="Cari nama murid..." class="border rounded-lg p-2 text-xs bg-white">
+              </div>
+
+              <!-- Senarai Checkbox Murid Individu -->
+              <div id="senaraiMuridIndividuKotak" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-56 overflow-y-auto p-2 bg-white rounded-xl border border-slate-200 text-xs">
+                <!-- Item murid dijana melalui JS -->
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-sm shadow transition">
+            Simpan Jadual Aktiviti & Senarai Murid
           </button>
         </form>
       </div>
@@ -383,6 +437,10 @@
     let senaraiMurid = [];
     let senaraiAktiviti = [];
     let senaraiPukalPratonton = [];
+    let muridDipilihUntukAktiviti = new Set(); // Kunci: "NAMA___KELAS"
+    let muridTelahHadirAktivitiSemasa = new Set();
+    let aktivitiSemasaDipilih = null;
+
     let faceMatcher = null;
     let streamSemasa = null;
     let scanTimer = null;
@@ -464,202 +522,140 @@
 
       if (tabId === 'dashboard') muatTurunDashboard();
       if (tabId !== 'rekod') hentiKameraImbasan();
+      if (tabId === 'admin-aktiviti') binaKomponenPemilihanMuridAktiviti();
     }
 
-    // ==================== LOGIK IMPORT PUKAL (BAHARU) ====================
-    function tukarModImport(mod) {
-      if (mod === 'fail') {
-        document.getElementById('kotakImportFail').classList.remove('hidden');
-        document.getElementById('kotakImportTeks').classList.add('hidden');
-        document.getElementById('btnImportFail').className = 'px-4 py-2 text-sm font-bold border-b-2 border-indigo-600 text-indigo-700';
-        document.getElementById('btnImportTeks').className = 'px-4 py-2 text-sm font-semibold text-slate-500 hover:text-indigo-600';
-      } else {
-        document.getElementById('kotakImportFail').classList.add('hidden');
-        document.getElementById('kotakImportTeks').classList.remove('hidden');
-        document.getElementById('btnImportTeks').className = 'px-4 py-2 text-sm font-bold border-b-2 border-indigo-600 text-indigo-700';
-        document.getElementById('btnImportFail').className = 'px-4 py-2 text-sm font-semibold text-slate-500 hover:text-indigo-600';
-      }
-    }
-
-    function bacaFailExcel(e) {
-      const fail = e.target.files[0];
-      if (!fail) return;
-
-      const pembaca = new FileReader();
-      pembaca.onload = function(evt) {
-        const data = new Uint8Array(evt.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-
-        // Cari sheet pertama atau sheet bernama 'SEMUA DATA MURID'
-        let namaSheet = workbook.SheetNames[0];
-        if (workbook.SheetNames.includes("SEMUA DATA MURID")) {
-          namaSheet = "SEMUA DATA MURID";
-        }
-
-        const sheet = workbook.Sheets[namaSheet];
-        const barisArray = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-        // Pengesanan pintar lajur APDM / Excel Biasa
-        let idxNama = -1;
-        let idxKelas = -1;
-        let barisMula = -1;
-
-        for (let i = 0; i < Math.min(15, barisArray.length); i++) {
-          const row = barisArray[i] || [];
-          for (let j = 0; j < row.length; j++) {
-            const val = String(row[j] || "").toUpperCase().trim();
-            if (val === "NAMA" || val === "NAMA MURID") idxNama = j;
-            if (val === "NAMA KELAS" || val === "KELAS" || val === "TINGKATAN") idxKelas = j;
-          }
-          if (idxNama !== -1 && idxKelas !== -1) {
-            barisMula = i + 1;
-            break;
-          }
-        }
-
-        // Jika tiada header dikesan, cuba fallback lajur default APDM: col 2 (NAMA), col 10 (KELAS)
-        if (idxNama === -1 || idxKelas === -1) {
-          idxNama = 2;
-          idxKelas = 10;
-          barisMula = 6;
-        }
-
-        senaraiPukalPratonton = [];
-        for (let i = barisMula; i < barisArray.length; i++) {
-          const r = barisArray[i];
-          if (!r) continue;
-          const nama = String(r[idxNama] || "").trim();
-          const kelas = String(r[idxKelas] || "").trim();
-
-          if (nama && nama.length > 2 && nama !== "NAMA" && !nama.includes("JUMLAH")) {
-            senaraiPukalPratonton.push({ nama, tingkatan: kelas || "Umum" });
-          }
-        }
-
-        paparkanPratontonPukal();
-      };
-      pembaca.readAsArrayBuffer(fail);
-    }
-
-    function prosesTeksPukal() {
-      const teks = document.getElementById('inputTeksPukal').value;
-      const baris = teks.split('\n');
-      senaraiPukalPratonton = [];
-
-      baris.forEach(b => {
-        if (!b.trim()) return;
-        // Sokong koma atau tab
-        const bahagian = b.includes('\t') ? b.split('\t') : b.split(',');
-        const nama = String(bahagian[0] || "").trim();
-        const tingkatan = String(bahagian[1] || "Umum").trim();
-
-        if (nama) {
-          senaraiPukalPratonton.push({ nama, tingkatan });
-        }
-      });
-
-      paparkanPratontonPukal();
-    }
-
-    function paparkanPratontonPukal() {
-      const ruang = document.getElementById('ruangPratonton');
-      const tbody = document.getElementById('tBodyPratonton');
-      const kiraan = document.getElementById('kiraanPratonton');
-
-      ruang.classList.remove('hidden');
-      kiraan.innerText = senaraiPukalPratonton.length;
-      tbody.innerHTML = '';
-
-      if (senaraiPukalPratonton.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-rose-500">Tiada nama murid sah dikesan. Sila periksa fail atau teks anda.</td></tr>';
-        return;
-      }
-
-      senaraiPukalPratonton.slice(0, 100).forEach((m, idx) => {
-        tbody.innerHTML += `
-          <tr class="hover:bg-slate-50">
-            <td class="p-2 text-slate-400 font-mono">${idx + 1}</td>
-            <td class="p-2 font-medium text-slate-800">${m.nama}</td>
-            <td class="p-2 text-indigo-600 font-bold">${m.tingkatan}</td>
-          </tr>
+    // ==================== LOGIK PEMILIHAN MURID AKTIVITI (KELAS & INDIVIDU) ====================
+    function binaKomponenPemilihanMuridAktiviti() {
+      const kelasSet = [...new Set(senaraiMurid.map(m => m.tingkatan))].filter(Boolean).sort();
+      
+      // 1. Bina Checkbox Pilihan Cepat Mengikut Kelas
+      const cBoxKotak = document.getElementById('kotakCheckboxKelas');
+      cBoxKotak.innerHTML = '';
+      kelasSet.forEach(k => {
+        cBoxKotak.innerHTML += `
+          <button type="button" onclick="togglePilihKelasSemua('${k}')" class="px-3 py-1.5 bg-white border border-slate-300 hover:border-indigo-500 rounded-lg text-xs font-semibold text-slate-700 shadow-sm flex items-center gap-1.5 transition">
+            <span>+ Kelas ${k}</span>
+          </button>
         `;
       });
 
-      if (senaraiPukalPratonton.length > 100) {
-        tbody.innerHTML += `<tr><td colspan="3" class="p-2 text-center text-xs text-slate-400">... dan ${senaraiPukalPratonton.length - 100} murid lagi.</td></tr>`;
-      }
+      // 2. Dropdown Filter Murid Individu
+      const filterSel = document.getElementById('filterKelasPemilihan');
+      filterSel.innerHTML = '<option value="">Semua Kelas</option>';
+      kelasSet.forEach(k => {
+        filterSel.innerHTML += `<option value="${k}">${k}</option>`;
+      });
+
+      paparkanSenaraiPilihanIndividu();
     }
 
-    async function hantarImportPukal() {
-      if (senaraiPukalPratonton.length === 0) {
-        alert("Tiada data murid untuk diimport.");
+    function togglePilihKelasSemua(namaKelas) {
+      const muridKelas = senaraiMurid.filter(m => m.tingkatan === namaKelas);
+      const semuaTerpilih = muridKelas.every(m => muridDipilihUntukAktiviti.has(`${m.nama}___${m.tingkatan}`));
+
+      muridKelas.forEach(m => {
+        const kunci = `${m.nama}___${m.tingkatan}`;
+        if (semuaTerpilih) {
+          muridDipilihUntukAktiviti.delete(kunci);
+        } else {
+          muridDipilihUntukAktiviti.add(kunci);
+        }
+      });
+
+      kemaskiniStatusPilihanAktiviti();
+      paparkanSenaraiPilihanIndividu();
+    }
+
+    function toggleMuridIndividu(nama, tingkatan) {
+      const kunci = `${nama}___${tingkatan}`;
+      if (muridDipilihUntukAktiviti.has(kunci)) {
+        muridDipilihUntukAktiviti.delete(kunci);
+      } else {
+        muridDipilihUntukAktiviti.add(kunci);
+      }
+      kemaskiniStatusPilihanAktiviti();
+    }
+
+    function paparkanSenaraiPilihanIndividu() {
+      const filterK = document.getElementById('filterKelasPemilihan').value;
+      const carian = document.getElementById('cariNamaPemilihan').value.toLowerCase().trim();
+      const kotak = document.getElementById('senaraiMuridIndividuKotak');
+
+      kotak.innerHTML = '';
+
+      const muridDitapis = senaraiMurid.filter(m => {
+        const padanKelas = !filterK || m.tingkatan === filterK;
+        const padanNama = !carian || m.nama.toLowerCase().includes(carian);
+        return padanKelas && padanNama;
+      });
+
+      if (muridDitapis.length === 0) {
+        kotak.innerHTML = '<p class="col-span-3 text-center text-slate-400 py-3">Tiada murid ditemui.</p>';
         return;
       }
 
-      const btn = document.getElementById('btnHantarPukal');
-      const msg = document.getElementById('msgImportStatus');
-
-      btn.disabled = true;
-      btn.innerText = "Sedang Memasukkan Data...";
-      msg.innerText = `Menghantar ${senaraiPukalPratonton.length} rekod murid ke Google Sheets...`;
-
-      try {
-        const res = await fetch(GAS_API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({
-            action: "importMuridPukal",
-            senarai: senaraiPukalPratonton
-          })
-        });
-
-        const data = await res.json();
-        if (data.success) {
-          msg.innerHTML = `<span class="text-emerald-600 font-bold">✓ Selesai! Sebanyak ${data.ditambah} murid baharu berjaya dimasukkan ke pangkalan data.</span>`;
-          alert(`Berjaya! ${data.ditambah} rekod murid telah disimpan ke Google Sheets.`);
-          await muatTurunDataMurid();
-        } else {
-          msg.innerHTML = `<span class="text-rose-600">Ralat: ${data.error}</span>`;
-        }
-      } catch (err) {
-        msg.innerHTML = `<span class="text-rose-600">Ralat sambungan: ${err.message}</span>`;
-      } finally {
-        btn.disabled = false;
-        btn.innerText = "Sahkan & Simpan Ke Sheets";
-      }
-    }
-
-    // ==================== OPERASI PENDAFTARAN & SCANNER ====================
-    async function muatTurunDataMurid() {
-      try {
-        const res = await fetch(`${GAS_API_URL}?action=getMurid`);
-        senaraiMurid = await res.json();
-
-        const kelasSet = [...new Set(senaraiMurid.map(m => m.tingkatan))].filter(Boolean).sort();
-        const selTingkatan = document.getElementById('filterTingkatan');
-        selTingkatan.innerHTML = '<option value="">Semua Kelas</option>';
-        kelasSet.forEach(k => {
-          selTingkatan.innerHTML += `<option value="${k}">${k}</option>`;
-        });
-        kemaskiniPilihanMurid();
-      } catch (err) {
-        console.error("Gagal muat murid:", err);
-      }
-    }
-
-    function binaPengecamWajah() {
-      const labeledDescriptors = [];
-      senaraiMurid.forEach(m => {
-        if (m.descriptor && Array.isArray(m.descriptor)) {
-          const descArr = new Float32Array(m.descriptor);
-          labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(`${m.nama} | ${m.tingkatan}`, [descArr]));
-        }
+      muridDitapis.forEach(m => {
+        const kunci = `${m.nama}___${m.tingkatan}`;
+        const terpilih = muridDipilihUntukAktiviti.has(kunci);
+        kotak.innerHTML += `
+          <label class="flex items-center gap-2 p-2 rounded-lg border ${terpilih ? 'bg-indigo-50 border-indigo-300' : 'bg-slate-50 border-slate-200'} cursor-pointer hover:bg-indigo-50/50 transition">
+            <input type="checkbox" onchange="toggleMuridIndividu('${m.nama.replace(/'/g, "\\'")}', '${m.tingkatan}')" ${terpilih ? 'checked' : ''} class="w-4 h-4 text-indigo-600 rounded">
+            <div class="truncate">
+              <p class="font-bold text-slate-800 truncate">${m.nama}</p>
+              <p class="text-[10px] text-slate-500 font-semibold">${m.tingkatan}</p>
+            </div>
+          </label>
+        `;
       });
-      if (labeledDescriptors.length > 0) {
-        faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55);
-      }
     }
 
+    function kemaskiniStatusPilihanAktiviti() {
+      document.getElementById('kiraanMuridDipilih').innerText = muridDipilihUntukAktiviti.size;
+    }
+
+    function kosongkanPilihanMuridAktiviti() {
+      muridDipilihUntukAktiviti.clear();
+      kemaskiniStatusPilihanAktiviti();
+      paparkanSenaraiPilihanIndividu();
+    }
+
+    async function simpanAktiviti(e) {
+      e.preventDefault();
+
+      if (muridDipilihUntukAktiviti.size === 0) {
+        alert("Sila pilih sekurang-kurangnya satu orang murid atau satu kelas untuk aktiviti ini.");
+        return;
+      }
+
+      const senaraiObjekMurid = Array.from(muridDipilihUntukAktiviti).map(kunci => {
+        const [nama, tingkatan] = kunci.split('___');
+        return { nama, tingkatan };
+      });
+
+      const payload = {
+        action: "simpanAktiviti",
+        namaAktiviti: document.getElementById('actNama').value,
+        tarikh: document.getElementById('actTarikh').value,
+        masaMula: document.getElementById('actMula').value,
+        masaTamat: document.getElementById('actTamat').value,
+        senaraiMurid: senaraiObjekMurid
+      };
+
+      await fetch(GAS_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+
+      alert(`Aktiviti berjaya disimpan dengan ${senaraiObjekMurid.length} orang murid sasaran!`);
+      document.getElementById('formAktiviti').reset();
+      kosongkanPilihanMuridAktiviti();
+      await muatTurunDataAktiviti();
+      navigasi('rekod');
+    }
+
+    // ==================== SEMAKAN AKTIVITI (30 MINIT SEBELUM MULA) ====================
     async function muatTurunDataAktiviti() {
       try {
         const res = await fetch(`${GAS_API_URL}?action=getAktiviti`);
@@ -673,11 +669,16 @@
     function tukarKategori() {
       const kat = document.getElementById('pilihanKategori').value;
       const kotak = document.getElementById('kotakAktiviti');
+      const banner = document.getElementById('bannerKemajuanAktiviti');
+
       if (kat === 'Aktiviti') {
         kotak.classList.remove('hidden');
         semakAktivitiTersedia();
+        kemaskiniMaklumatAktivitiSemasa();
       } else {
         kotak.classList.add('hidden');
+        banner.classList.add('hidden');
+        aktivitiSemasaDipilih = null;
       }
     }
 
@@ -694,8 +695,9 @@
         const tamat = new Date(`${act.tarikh}T${act.masaTamat}`);
         const bezaMinit = (mula - kini) / (1000 * 60);
 
+        // Hanya keluar 30 minit sebelum acara bermula sehingga waktu tamat
         if (act.tarikh === tarikhHariIni && bezaMinit <= 30 && kini <= tamat) {
-          sel.innerHTML += `<option value="${act.nama}">${act.nama} (${act.masaMula} - ${act.masaTamat})</option>`;
+          sel.innerHTML += `<option value="${act.id}">${act.nama} (${act.masaMula} - ${act.masaTamat}) [${act.jumlahSasaran} Murid]</option>`;
           ada = true;
         }
       });
@@ -705,29 +707,26 @@
       }
     }
 
-    async function simpanAktiviti(e) {
-      e.preventDefault();
-      const payload = {
-        action: "simpanAktiviti",
-        namaAktiviti: document.getElementById('actNama').value,
-        tarikh: document.getElementById('actTarikh').value,
-        masaMula: document.getElementById('actMula').value,
-        masaTamat: document.getElementById('actTamat').value,
-        sasaran: document.getElementById('actSasaran').value
-      };
+    function kemaskiniMaklumatAktivitiSemasa() {
+      const actId = document.getElementById('selectAktivitiAktif').value;
+      const banner = document.getElementById('bannerKemajuanAktiviti');
 
-      await fetch(GAS_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
-      });
+      if (!actId) {
+        banner.classList.add('hidden');
+        aktivitiSemasaDipilih = null;
+        return;
+      }
 
-      alert("Aktiviti berjaya disimpan!");
-      document.getElementById('formAktiviti').reset();
-      await muatTurunDataAktiviti();
+      aktivitiSemasaDipilih = senaraiAktiviti.find(a => a.id === actId);
+      if (aktivitiSemasaDipilih) {
+        banner.classList.remove('hidden');
+        document.getElementById('namaAktivitiLabel').innerText = aktivitiSemasaDipilih.nama;
+        document.getElementById('kiraanSasaranLabel').innerText = aktivitiSemasaDipilih.jumlahSasaran;
+        document.getElementById('kiraanHadirAktivitiLabel').innerText = muridTelahHadirAktivitiSemasa.size;
+      }
     }
 
-    // Kamera & Imbasan Pukal
+    // ==================== OPERASI KAMERA & PENGECAMAN PUKAL ====================
     async function mulaKameraImbasan() {
       const kameraFacing = document.getElementById('pilihanKamera').value;
       const video = document.getElementById('videoImbasan');
@@ -751,6 +750,7 @@
           scanTimer = setInterval(async () => {
             if (!faceMatcher) return;
 
+            // Pengesanan pukal untuk ramai murid serentak
             const detections = await faceapi.detectAllFaces(video)
               .withFaceLandmarks()
               .withFaceDescriptors();
@@ -804,7 +804,17 @@
 
       const jenis = document.getElementById('pilihanJenis').value;
       const kategori = document.getElementById('pilihanKategori').value;
-      const namaAktiviti = (kategori === 'Aktiviti') ? document.getElementById('selectAktivitiAktif').value : '';
+      let namaAktiviti = "";
+
+      if (kategori === 'Aktiviti') {
+        if (!aktivitiSemasaDipilih) {
+          alert("Sila pilih aktiviti yang sedang berlangsung terlebih dahulu.");
+          return;
+        }
+        namaAktiviti = aktivitiSemasaDipilih.nama;
+        muridTelahHadirAktivitiSemasa.add(nama);
+        document.getElementById('kiraanHadirAktivitiLabel').innerText = muridTelahHadirAktivitiSemasa.size;
+      }
 
       tunjukToast(nama, `Merekodkan ${jenis}...`);
 
@@ -840,6 +850,187 @@
 
     function setMsgImbasan(txt) {
       document.getElementById('statusImbasan').innerText = txt;
+    }
+
+    // ==================== IMPORT PUKAL EXCEL / TEKS ====================
+    function tukarModImport(mod) {
+      if (mod === 'fail') {
+        document.getElementById('kotakImportFail').classList.remove('hidden');
+        document.getElementById('kotakImportTeks').classList.add('hidden');
+        document.getElementById('btnImportFail').className = 'px-4 py-2 text-sm font-bold border-b-2 border-indigo-600 text-indigo-700';
+        document.getElementById('btnImportTeks').className = 'px-4 py-2 text-sm font-semibold text-slate-500 hover:text-indigo-600';
+      } else {
+        document.getElementById('kotakImportFail').classList.add('hidden');
+        document.getElementById('kotakImportTeks').classList.remove('hidden');
+        document.getElementById('btnImportTeks').className = 'px-4 py-2 text-sm font-bold border-b-2 border-indigo-600 text-indigo-700';
+        document.getElementById('btnImportFail').className = 'px-4 py-2 text-sm font-semibold text-slate-500 hover:text-indigo-600';
+      }
+    }
+
+    function bacaFailExcel(e) {
+      const fail = e.target.files[0];
+      if (!fail) return;
+
+      const pembaca = new FileReader();
+      pembaca.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        let namaSheet = workbook.SheetNames[0];
+        if (workbook.SheetNames.includes("SEMUA DATA MURID")) {
+          namaSheet = "SEMUA DATA MURID";
+        }
+
+        const sheet = workbook.Sheets[namaSheet];
+        const barisArray = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        let idxNama = -1;
+        let idxKelas = -1;
+        let barisMula = -1;
+
+        for (let i = 0; i < Math.min(15, barisArray.length); i++) {
+          const row = barisArray[i] || [];
+          for (let j = 0; j < row.length; j++) {
+            const val = String(row[j] || "").toUpperCase().trim();
+            if (val === "NAMA" || val === "NAMA MURID") idxNama = j;
+            if (val === "NAMA KELAS" || val === "KELAS" || val === "TINGKATAN") idxKelas = j;
+          }
+          if (idxNama !== -1 && idxKelas !== -1) {
+            barisMula = i + 1;
+            break;
+          }
+        }
+
+        if (idxNama === -1 || idxKelas === -1) {
+          idxNama = 2;
+          idxKelas = 10;
+          barisMula = 6;
+        }
+
+        senaraiPukalPratonton = [];
+        for (let i = barisMula; i < barisArray.length; i++) {
+          const r = barisArray[i];
+          if (!r) continue;
+          const nama = String(r[idxNama] || "").trim();
+          const kelas = String(r[idxKelas] || "").trim();
+
+          if (nama && nama.length > 2 && nama !== "NAMA" && !nama.includes("JUMLAH")) {
+            senaraiPukalPratonton.push({ nama, tingkatan: kelas || "Umum" });
+          }
+        }
+
+        paparkanPratontonPukal();
+      };
+      pembaca.readAsArrayBuffer(fail);
+    }
+
+    function prosesTeksPukal() {
+      const teks = document.getElementById('inputTeksPukal').value;
+      const baris = teks.split('\n');
+      senaraiPukalPratonton = [];
+
+      baris.forEach(b => {
+        if (!b.trim()) return;
+        const bahagian = b.includes('\t') ? b.split('\t') : b.split(',');
+        const nama = String(bahagian[0] || "").trim();
+        const tingkatan = String(bahagian[1] || "Umum").trim();
+
+        if (nama) {
+          senaraiPukalPratonton.push({ nama, tingkatan });
+        }
+      });
+
+      paparkanPratontonPukal();
+    }
+
+    function paparkanPratontonPukal() {
+      const ruang = document.getElementById('ruangPratonton');
+      const tbody = document.getElementById('tBodyPratonton');
+      const kiraan = document.getElementById('kiraanPratonton');
+
+      ruang.classList.remove('hidden');
+      kiraan.innerText = senaraiPukalPratonton.length;
+      tbody.innerHTML = '';
+
+      if (senaraiPukalPratonton.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-rose-500">Tiada nama murid sah dikesan.</td></tr>';
+        return;
+      }
+
+      senaraiPukalPratonton.slice(0, 100).forEach((m, idx) => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-2 text-slate-400 font-mono">${idx + 1}</td>
+            <td class="p-2 font-medium text-slate-800">${m.nama}</td>
+            <td class="p-2 text-indigo-600 font-bold">${m.tingkatan}</td>
+          </tr>
+        `;
+      });
+    }
+
+    async function hantarImportPukal() {
+      const btn = document.getElementById('btnHantarPukal');
+      const msg = document.getElementById('msgImportStatus');
+
+      btn.disabled = true;
+      btn.innerText = "Sedang Memasukkan Data...";
+      msg.innerText = `Menghantar ${senaraiPukalPratonton.length} rekod murid ke Google Sheets...`;
+
+      try {
+        const res = await fetch(GAS_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "importMuridPukal",
+            senarai: senaraiPukalPratonton
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          msg.innerHTML = `<span class="text-emerald-600 font-bold">✓ Selesai! ${data.ditambah} murid baharu berjaya disimpan.</span>`;
+          alert(`Berjaya! ${data.ditambah} rekod murid telah disimpan ke Google Sheets.`);
+          await muatTurunDataMurid();
+        } else {
+          msg.innerHTML = `<span class="text-rose-600">Ralat: ${data.error}</span>`;
+        }
+      } catch (err) {
+        msg.innerHTML = `<span class="text-rose-600">Ralat: ${err.message}</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Sahkan & Simpan Ke Sheets";
+      }
+    }
+
+    // ==================== OPERASI PENDAFTARAN WAJAH ====================
+    async function muatTurunDataMurid() {
+      try {
+        const res = await fetch(`${GAS_API_URL}?action=getMurid`);
+        senaraiMurid = await res.json();
+
+        const kelasSet = [...new Set(senaraiMurid.map(m => m.tingkatan))].filter(Boolean).sort();
+        const selTingkatan = document.getElementById('filterTingkatan');
+        selTingkatan.innerHTML = '<option value="">Semua Kelas</option>';
+        kelasSet.forEach(k => {
+          selTingkatan.innerHTML += `<option value="${k}">${k}</option>`;
+        });
+        kemaskiniPilihanMurid();
+      } catch (err) {
+        console.error("Gagal muat murid:", err);
+      }
+    }
+
+    function binaPengecamWajah() {
+      const labeledDescriptors = [];
+      senaraiMurid.forEach(m => {
+        if (m.descriptor && Array.isArray(m.descriptor)) {
+          const descArr = new Float32Array(m.descriptor);
+          labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(`${m.nama} | ${m.tingkatan}`, [descArr]));
+        }
+      });
+      if (labeledDescriptors.length > 0) {
+        faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55);
+      }
     }
 
     function kemaskiniPilihanMurid() {
@@ -878,11 +1069,11 @@
         .withFaceDescriptor();
 
       if (!detection) {
-        msg.innerText = "Wajah tidak dikesan dengan jelas. Sila pandang ke arah kamera.";
+        msg.innerText = "Wajah tidak dikesan dengan jelas. Sila pandang tepat ke kamera.";
         return;
       }
 
-      msg.innerText = "Menyimpan deskriptor ke Google Sheets...";
+      msg.innerText = "Menyimpan ke pangkalan data...";
       const res = await fetch(GAS_API_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -904,6 +1095,7 @@
       }
     }
 
+    // ==================== DASHBOARD STATISTIK ====================
     async function muatTurunDashboard() {
       try {
         const res = await fetch(`${GAS_API_URL}?action=getDashboard`);
