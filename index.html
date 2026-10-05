@@ -17,11 +17,29 @@
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col font-sans">
 
+  <!-- ==================== MODAL DIALOG MEMUAT DATA ==================== -->
+  <div id="modalLoading" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center border border-slate-100 flex flex-col items-center">
+      <div class="relative w-20 h-20 mb-4 flex items-center justify-center">
+        <div class="absolute inset-0 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin"></div>
+        <img src="logo.png" alt="Logo Sekolah" class="w-10 h-10 object-contain rounded-full shadow-sm">
+      </div>
+      
+      <h3 id="loadingTajuk" class="text-base font-extrabold text-slate-800 tracking-tight">Sedang Memproses Data...</h3>
+      <p id="loadingMesej" class="text-xs text-slate-500 mt-2 leading-relaxed">Sistem sedang berhubung dengan pangkalan data Google Sheets. Sila tunggu sebentar.</p>
+      
+      <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-5">
+        <div class="bg-indigo-600 h-full w-2/3 rounded-full animate-pulse"></div>
+      </div>
+      <span class="text-[10px] text-indigo-600 font-bold mt-2.5 uppercase tracking-wider">Harap Bersabar & Terima Kasih</span>
+    </div>
+  </div>
+
   <!-- ==================== HEADER & NAVIGASI ==================== -->
   <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
       
-      <!-- Logo & Tajuk -->
+      <!-- Logo Sekolah & Tajuk -->
       <div class="flex items-center gap-3">
         <img src="logo.png" alt="Logo Sekolah" class="w-10 h-10 object-contain rounded-md bg-white p-0.5 shadow-sm">
         <div>
@@ -85,7 +103,7 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL SUSULAN: CAM WAJAH / REKOD HADIR (MURID TIDAK HADIR) ==================== -->
+  <!-- ==================== MODAL SUSULAN: CAM WAJAH / REKOD HADIR ==================== -->
   <div id="modalSusulanTidakHadir" class="fixed inset-0 bg-black/65 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
       <button onclick="tutupModalSusulan()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
@@ -433,12 +451,31 @@
         </div>
       </div>
 
-      <!-- BAHAGIAN UTAMA: SENARAI MURID TIDAK HADIR HARI INI -->
+      <!-- ==================== BAHAGIAN BAHARU: STATISTIK KEHADIRAN MENGIKUT KELAS ==================== -->
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4 border-b pb-3">
           <div>
             <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-              <span>Senarai Murid Tidak Hadir Sesi Persekolahan Hari Ini</span>
+              <span>Statistik Kehadiran Mengikut Kelas</span>
+              <span class="text-xs bg-indigo-100 text-indigo-800 px-2.5 py-0.5 rounded-full font-bold">Pecahan Kelas APDM</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">Ringkasan bilangan hadir, peratusan, dan senarai murid yang tidak hadir bagi setiap kelas.</p>
+          </div>
+        </div>
+
+        <!-- Grid Kad Statistik Kelas -->
+        <div id="gridStatistikKelas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Kad Kelas dijana secara dinamik melalui JavaScript -->
+          <div class="col-span-full p-6 text-center text-slate-400 text-xs">Memuatkan statistik kelas...</div>
+        </div>
+      </div>
+
+      <!-- BAHAGIAN UTAMA: SENARAI KESELURUHAN MURID TIDAK HADIR HARI INI -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4 border-b pb-3">
+          <div>
+            <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+              <span>Senarai Keseluruhan Murid Tidak Hadir Hari Ini</span>
               <span id="labelKiraanTidakHadir" class="text-xs bg-rose-100 text-rose-800 px-2.5 py-0.5 rounded-full font-bold">0 Orang</span>
             </h3>
             <p class="text-xs text-slate-500 mt-0.5">Murid yang belum mengimbas muka pagi ini boleh dicam semula wajahnya atau direkod sebagai Hadir Lewat / Tercicir.</p>
@@ -549,8 +586,78 @@
     let tabSasaranAdmin = null;
     let adminDisahkan = false;
 
+    // ==================== ENJIN AUDIO (WEB AUDIO SYNTHESIZER) ====================
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    // 1. Bunyi Pendaftaran Wajah Kali Pertama (Chime Nada Harmoni Naik: C5 -> E5 -> G5)
+    function mainBunyiDaftar() {
+      try {
+        const ctx = getAudioContext();
+        const nada = [523.25, 659.25, 783.99]; // C5, E5, G5
+        nada.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.12);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime + i * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.25);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + i * 0.12);
+          osc.stop(ctx.currentTime + i * 0.12 + 0.25);
+        });
+      } catch (e) {
+        console.error("Audio error:", e);
+      }
+    }
+
+    // 2. Bunyi Pengecaman Kehadiran Berjaya (Ding-Dong / Nada Ceria: E5 -> A5)
+    function mainBunyiHadir() {
+      try {
+        const ctx = getAudioContext();
+        const nada = [659.25, 880.00]; // E5, A5
+        nada.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.14);
+          gain.gain.setValueAtTime(0.25, ctx.currentTime + i * 0.14);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.14 + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + i * 0.14);
+          osc.stop(ctx.currentTime + i * 0.14 + 0.35);
+        });
+      } catch (e) {
+        console.error("Audio error:", e);
+      }
+    }
+
+    // ==================== FUNGSI DIALOG MEMUAT DATA ====================
+    function tunjukLoading(tajuk = "Sedang Memproses Data...", mesej = "Sistem sedang berhubung dengan pangkalan data Google Sheets. Sila tunggu sebentar.") {
+      const modal = document.getElementById('modalLoading');
+      document.getElementById('loadingTajuk').innerText = tajuk;
+      document.getElementById('loadingMesej').innerText = mesej;
+      modal.classList.remove('hidden');
+    }
+
+    function tutupLoading() {
+      const modal = document.getElementById('modalLoading');
+      modal.classList.add('hidden');
+    }
+
     // Inisialisasi Apabila Laman Dimuatkan
     window.addEventListener('DOMContentLoaded', async () => {
+      tunjukLoading("Memulakan Sistem", "Sedang memuat turun model AI pengecaman wajah & pangkalan data murid dari Google Sheets. Sila tunggu sebentar...");
       setMsgImbasan("Memuatkan model AI pengecaman wajah...");
       try {
         await Promise.all([
@@ -565,6 +672,8 @@
         setMsgImbasan("Sedia untuk imbasan.");
       } catch (e) {
         setMsgImbasan("Ralat inisialisasi: " + e.message);
+      } finally {
+        tutupLoading();
       }
     });
 
@@ -626,13 +735,14 @@
       if (tabId === 'admin-aktiviti') binaKomponenPemilihanMuridAktiviti();
     }
 
-    // ==================== DASHBOARD STATISTIK & SUSULAN TIDAK HADIR ====================
+    // ==================== DASHBOARD STATISTIK TERMASUK PECAHAN KELAS ====================
     async function muatTurunDashboard() {
+      tunjukLoading("Memuat Turun Data Dashboard", "Sedang mengemas kini maklumat kehadiran harian mengikut kelas dan senarai murid tidak hadir...");
       try {
         const res = await fetch(`${GAS_API_URL}?action=getDashboard`);
         const d = await res.json();
 
-        // Metrik Utama
+        // Metrik Utama Keseluruhan
         document.getElementById('dashTotal').innerText = d.jumlahMurid;
         document.getElementById('dashHadir').innerText = d.hadirHariIni;
         document.getElementById('dashPeratus').innerText = d.peratusHadir + "%";
@@ -642,7 +752,10 @@
 
         document.getElementById('labelKiraanTidakHadir').innerText = d.jumlahTidakHadir + " Orang";
 
-        // Simpan senarai tidak hadir untuk penapisan dinamik
+        // Paparkan Statistik Mengikut Kelas
+        paparkanStatistikKelas(d.pecahanKelas || []);
+
+        // Simpan senarai tidak hadir
         senaraiMuridTidakHadirMaster = d.senaraiTidakHadir || [];
         
         // Kemaskini Dropdown Kelas Tidak Hadir
@@ -689,7 +802,83 @@
         }
       } catch (e) {
         console.error("Gagal muat data dashboard:", e);
+      } finally {
+        tutupLoading();
       }
+    }
+
+    // Paparan Kad Statistik Mengikut Kelas
+    function paparkanStatistikKelas(senaraiKelas) {
+      const container = document.getElementById('gridStatistikKelas');
+      container.innerHTML = '';
+
+      if (senaraiKelas.length === 0) {
+        container.innerHTML = '<div class="col-span-full p-4 text-center text-slate-400 text-xs">Tiada rekod data kelas ditemui.</div>';
+        return;
+      }
+
+      senaraiKelas.forEach(k => {
+        const peratusNum = parseFloat(k.peratus);
+        let warnaBadge = 'text-emerald-700 bg-emerald-50 border-emerald-200';
+        let warnaBar = 'bg-emerald-500';
+
+        if (peratusNum < 80) {
+          warnaBadge = 'text-rose-700 bg-rose-50 border-rose-200';
+          warnaBar = 'bg-rose-500';
+        } else if (peratusNum < 90) {
+          warnaBadge = 'text-amber-700 bg-amber-50 border-amber-200';
+          warnaBar = 'bg-amber-500';
+        }
+
+        // Senarai Murid Tidak Hadir Dalam Kelas Ini
+        let htmlTidakHadir = '';
+        if (k.senaraiTidakHadir && k.senaraiTidakHadir.length > 0) {
+          htmlTidakHadir = k.senaraiTidakHadir.map(m => `
+            <div class="flex items-center justify-between py-1.5 px-2 bg-slate-50 rounded-lg text-xs gap-2 border border-slate-100">
+              <span class="font-medium text-slate-700 truncate">${m.nama}</span>
+              <button onclick="bukaModalSusulan('${m.nama.replace(/'/g, "\\'")}', '${m.tingkatan}')" class="text-[10px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-2 py-0.5 rounded transition whitespace-nowrap">
+                Cam / Hadir
+              </button>
+            </div>
+          `).join('');
+        } else {
+          htmlTidakHadir = '<p class="text-xs text-emerald-600 font-semibold text-center py-2 bg-emerald-50/50 rounded-lg">Semua murid hadir (100%)!</p>';
+        }
+
+        container.innerHTML += `
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-base font-black text-indigo-900 tracking-wide">${k.kelas}</span>
+                <span class="text-xs font-black px-2.5 py-0.5 rounded-full border ${warnaBadge}">
+                  ${k.peratus}%
+                </span>
+              </div>
+              
+              <!-- Bilangan Hadir / Enrolmen -->
+              <div class="flex items-center justify-between text-xs text-slate-500 mb-1.5 font-semibold">
+                <span>Kehadiran:</span>
+                <span class="text-slate-800 font-bold">${k.hadir} / ${k.enrolmen} Murid</span>
+              </div>
+
+              <!-- Jalur Kemajuan -->
+              <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden mb-3">
+                <div class="${warnaBar} h-full rounded-full transition-all duration-500" style="width: ${k.peratus}%"></div>
+              </div>
+
+              <!-- Senarai Tidak Hadir Kelas Ini -->
+              <div class="mt-3 border-t pt-2.5">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] font-bold text-slate-600 uppercase">Tidak Hadir (${k.tidakHadirCount})</span>
+                </div>
+                <div class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                  ${htmlTidakHadir}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
     }
 
     function tapisSenaraiTidakHadir() {
@@ -738,13 +927,11 @@
       document.getElementById('susulanNamaMurid').innerText = nama;
       document.getElementById('susulanKelasMurid').innerText = tingkatan;
 
-      // Tetapkan masa sekarang secara automatik (HH:MM)
       const now = new Date();
       const jam = String(now.getHours()).padStart(2, '0');
       const minit = String(now.getMinutes()).padStart(2, '0');
       document.getElementById('susulanMasaMasuk').value = `${jam}:${minit}`;
 
-      // Reset info kamera
       document.getElementById('statusKameraSusulan').classList.remove('hidden');
       document.getElementById('msgCamSusulan').innerText = '';
 
@@ -794,6 +981,7 @@
                   boxColor: '#10b981'
                 }).draw(canvas);
                 msg.innerHTML = `<span class="text-emerald-600 font-bold">✓ Wajah Disahkan Berpadanan!</span>`;
+                mainBunyiHadir(); // Mainkan bunyi pengesahan kehadiran
               } else {
                 new faceapi.draw.DrawBox(resized.box, {
                   label: padanan.label !== 'unknown' ? padanan.label : 'Wajah Lain',
@@ -820,12 +1008,10 @@
       e.preventDefault();
       if (!muridSusulanSemasa) return;
 
-      const btn = document.getElementById('btnHantarSusulan');
-      btn.disabled = true;
-      btn.innerText = "Menyimpan Rekod...";
-
       const statusPilihan = document.getElementById('susulanStatusPilihan').value;
       const masaMasuk = document.getElementById('susulanMasaMasuk').value;
+
+      tunjukLoading("Menyimpan Rekod Kehadiran", `Sedang merekodkan kehadiran ${muridSusulanSemasa.nama} sebagai [${statusPilihan}] ke Google Sheets. Sila tunggu sebentar...`);
 
       try {
         const res = await fetch(GAS_API_URL, {
@@ -842,17 +1028,17 @@
 
         const data = await res.json();
         if (data.success) {
+          mainBunyiHadir(); // Mainkan bunyi pengesahan kehadiran
           tutupModalSusulan();
+          await muatTurunDashboard();
           alert(`Kehadiran bagi ${data.nama} berjaya direkodkan sebagai [${data.status}] pada jam ${data.masa}.`);
-          await muatTurunDashboard(); // Kemas kini dashboard serta-merta
         } else {
           alert("Ralat semasa menyimpan rekod: " + data.error);
         }
       } catch (err) {
         alert("Ralat sambungan: " + err.message);
       } finally {
-        btn.disabled = false;
-        btn.innerText = "Sahkan & Simpan Kehadiran";
+        tutupLoading();
       }
     }
 
@@ -962,6 +1148,8 @@
         return { nama, tingkatan };
       });
 
+      tunjukLoading("Menyimpan Jadual Aktiviti", "Sedang menyimpan maklumat aktiviti dan senarai murid terlibat ke Google Sheets. Sila tunggu sebentar...");
+
       const payload = {
         action: "simpanAktiviti",
         namaAktiviti: document.getElementById('actNama').value,
@@ -971,17 +1159,23 @@
         senaraiMurid: senaraiObjekMurid
       };
 
-      await fetch(GAS_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
-      });
+      try {
+        await fetch(GAS_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
 
-      alert(`Aktiviti berjaya disimpan dengan ${senaraiObjekMurid.length} orang murid sasaran!`);
-      document.getElementById('formAktiviti').reset();
-      kosongkanPilihanMuridAktiviti();
-      await muatTurunDataAktiviti();
-      navigasi('rekod');
+        alert(`Aktiviti berjaya disimpan dengan ${senaraiObjekMurid.length} orang murid sasaran!`);
+        document.getElementById('formAktiviti').reset();
+        kosongkanPilihanMuridAktiviti();
+        await muatTurunDataAktiviti();
+        navigasi('rekod');
+      } catch (err) {
+        alert("Ralat semasa menyimpan aktiviti: " + err.message);
+      } finally {
+        tutupLoading();
+      }
     }
 
     async function muatTurunDataAktiviti() {
@@ -1053,7 +1247,7 @@
       }
     }
 
-    // ==================== OPERASI KAMERA PUKAL (SESI PAGI / PETANG) ====================
+    // ==================== OPERASI KAMERA PUKAL ====================
     async function mulaKameraImbasan() {
       const kameraFacing = document.getElementById('pilihanKamera').value;
       const video = document.getElementById('videoImbasan');
@@ -1158,6 +1352,7 @@
           })
         });
         const d = await res.json();
+        mainBunyiHadir(); // Mainkan bunyi pengesahan kehadiran berjaya
         tunjukToast(nama, `Selesai Rekod (${d.masa} - ${d.status})`);
       } catch (e) {
         console.error("Ralat rekod kehadiran:", e);
@@ -1295,12 +1490,12 @@
     }
 
     async function hantarImportPukal() {
-      const btn = document.getElementById('btnHantarPukal');
-      const msg = document.getElementById('msgImportStatus');
+      if (senaraiPukalPratonton.length === 0) {
+        alert("Tiada data murid untuk diimport.");
+        return;
+      }
 
-      btn.disabled = true;
-      btn.innerText = "Sedang Memasukkan Data...";
-      msg.innerText = `Menghantar ${senaraiPukalPratonton.length} rekod murid ke Google Sheets...`;
+      tunjukLoading("Memuat Naik Data Pukal", `Sedang menghantar ${senaraiPukalPratonton.length} rekod murid ke Google Sheets. Proses ini mengambil masa beberapa saat...`);
 
       try {
         const res = await fetch(GAS_API_URL, {
@@ -1314,21 +1509,19 @@
 
         const data = await res.json();
         if (data.success) {
-          msg.innerHTML = `<span class="text-emerald-600 font-bold">✓ Selesai! ${data.ditambah} murid baharu berjaya disimpan.</span>`;
-          alert(`Berjaya! ${data.ditambah} rekod murid telah disimpan ke Google Sheets.`);
+          alert(`Berjaya! Sebanyak ${data.ditambah} murid baharu telah disimpan ke Google Sheets.`);
           await muatTurunDataMurid();
         } else {
-          msg.innerHTML = `<span class="text-rose-600">Ralat: ${data.error}</span>`;
+          alert("Ralat simpanan: " + data.error);
         }
       } catch (err) {
-        msg.innerHTML = `<span class="text-rose-600">Ralat: ${err.message}</span>`;
+        alert("Ralat sambungan: " + err.message);
       } finally {
-        btn.disabled = false;
-        btn.innerText = "Sahkan & Simpan Ke Sheets";
+        tutupLoading();
       }
     }
 
-    // ==================== DAFTAR WAJAH ====================
+    // ==================== OPERASI PENDAFTARAN WAJAH ====================
     async function muatTurunDataMurid() {
       try {
         const res = await fetch(`${GAS_API_URL}?action=getMurid`);
@@ -1399,25 +1592,34 @@
         return;
       }
 
-      msg.innerText = "Menyimpan ke pangkalan data...";
-      const res = await fetch(GAS_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          action: "daftarWajah",
-          nama,
-          tingkatan,
-          descriptor: Array.from(detection.descriptor)
-        })
-      });
+      tunjukLoading("Menyimpan Wajah Murid", `Sedang memproses dan menyimpan data wajah ${nama} ke Google Sheets. Sila tunggu sebentar...`);
 
-      const d = await res.json();
-      if (d.success) {
-        msg.innerText = `Berjaya! Wajah bagi ${nama} (${tingkatan}) telah disimpan.`;
-        await muatTurunDataMurid();
-        binaPengecamWajah();
-      } else {
-        msg.innerText = "Ralat simpanan: " + (d.error || d.message);
+      try {
+        const res = await fetch(GAS_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "daftarWajah",
+            nama,
+            tingkatan,
+            descriptor: Array.from(detection.descriptor)
+          })
+        });
+
+        const d = await res.json();
+        if (d.success) {
+          mainBunyiDaftar(); // Mainkan bunyi pendaftaran wajah kali pertama
+          msg.innerText = `Berjaya! Wajah bagi ${nama} (${tingkatan}) telah disimpan.`;
+          await muatTurunDataMurid();
+          binaPengecamWajah();
+          alert(`Wajah bagi ${nama} (${tingkatan}) telah berjaya didaftarkan ke pangkalan data!`);
+        } else {
+          msg.innerText = "Ralat simpanan: " + (d.error || d.message);
+        }
+      } catch (err) {
+        msg.innerText = "Ralat sambungan: " + err.message;
+      } finally {
+        tutupLoading();
       }
     }
   </script>
