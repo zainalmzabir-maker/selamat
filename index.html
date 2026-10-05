@@ -7,13 +7,10 @@
   
   <link rel="icon" type="image/png" href="logo.png">
   
-  <!-- Tailwind CSS CDN -->
+  <!-- Tailwind CSS & Enjin AI/Visualisasi -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Face-api.js Engine -->
   <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
-  <!-- SheetJS Library -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- Chart.js Engine -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -33,11 +30,15 @@
       border: 3.5px solid #10b981;
       box-shadow: 0 0 25px rgba(16, 185, 129, 0.7), 0 0 0 9999px rgba(0, 0, 0, 0.45);
     }
+    .biometric-guide.capture {
+      border: 4px solid #38bdf8;
+      box-shadow: 0 0 35px rgba(56, 189, 248, 0.9), 0 0 0 9999px rgba(0, 0, 0, 0.5);
+    }
   </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col font-sans">
 
-  <!-- ==================== MODAL LOADING ==================== -->
+  <!-- ==================== MODAL LOADING (KONTEKSTUAL) ==================== -->
   <div id="modalLoading" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[999999] flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center border border-slate-100 flex flex-col items-center">
       <div class="relative w-16 h-16 mb-3 flex items-center justify-center">
@@ -49,7 +50,7 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL KATA LALUAN (ADMIN & AKTIVITI) ==================== -->
+  <!-- ==================== MODAL KATA LALUAN ==================== -->
   <div id="modalKataLaluan" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100000] flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
       <img src="logo.png" alt="Logo" class="w-12 h-12 object-contain mx-auto mb-2">
@@ -61,6 +62,32 @@
         <button onclick="tutupModalKunci()" class="flex-1 py-2 rounded-xl text-slate-600 text-sm font-semibold hover:bg-slate-100 transition">Batal</button>
         <button onclick="sahkanKataLaluan()" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition">Buka Akses</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL KEMASKINI MAKLUMAT MURID ==================== -->
+  <div id="modalEditMuridAdmin" class="fixed inset-0 bg-black/65 backdrop-blur-sm z-[100000] flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 relative">
+      <div class="text-center mb-4">
+        <span class="text-xs bg-indigo-100 text-indigo-800 font-bold px-2.5 py-0.5 rounded-full uppercase">Kemaskini Murid</span>
+        <h3 class="text-base font-extrabold text-slate-800 mt-2">Ubah Maklumat Murid</h3>
+      </div>
+      <form onsubmit="hantarKemaskiniMuridAdmin(event)" class="space-y-3">
+        <input type="hidden" id="editMuridOldNama">
+        <input type="hidden" id="editMuridOldTingkatan">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nama Penuh</label>
+          <input type="text" id="editMuridNewNama" required class="w-full border rounded-xl p-2.5 text-xs font-bold bg-slate-50">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Tingkatan / Kelas</label>
+          <input type="text" id="editMuridNewTingkatan" required class="w-full border rounded-xl p-2.5 text-xs font-bold bg-slate-50">
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="tutupModalEditMurid()" class="flex-1 py-2 rounded-xl text-slate-600 text-xs font-bold hover:bg-slate-100">Batal</button>
+          <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold py-2 shadow">Simpan</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -76,7 +103,6 @@
         <div>
           <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Masa Hadir Sebenar</label>
           <input type="time" id="inputMasaSebenar" required class="w-full border rounded-xl p-2.5 text-center text-sm font-bold bg-slate-50">
-          <p class="text-[10px] text-slate-400 mt-1 text-center">*Masa $\le$ 7:20 pagi akan dikira automatik sebagai Masuk (Tepat Masa).</p>
         </div>
         <div class="flex gap-2">
           <button type="button" onclick="tutupModalKemaskiniMasa()" class="flex-1 py-2.5 rounded-xl text-slate-600 text-xs font-bold hover:bg-slate-100">Batal</button>
@@ -108,7 +134,7 @@
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Catatan Tambahan (Pilihan)</label>
-          <textarea id="catatanSebabText" rows="2" placeholder="Contoh: Surat doktor disertakan / makluman ibu bapa..." class="w-full border rounded-xl p-2.5 text-xs"></textarea>
+          <textarea id="catatanSebabText" rows="2" placeholder="Catatan tambahan..." class="w-full border rounded-xl p-2.5 text-xs"></textarea>
         </div>
         <div class="flex gap-2 pt-2">
           <button type="button" onclick="tutupModalSebab()" class="flex-1 py-2 rounded-xl text-slate-600 text-xs font-bold hover:bg-slate-100 transition">Batal</button>
@@ -140,7 +166,7 @@
     </div>
   </div>
 
-  <!-- ==================== HEADER & NAVIGASI (6 HALAMAN) ==================== -->
+  <!-- ==================== HEADER & NAVIGASI ==================== -->
   <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
       <div class="flex items-center gap-3">
@@ -171,13 +197,13 @@
   <!-- ==================== KANDUNGAN UTAMA ==================== -->
   <main class="max-w-6xl mx-auto p-4 flex-grow w-full">
 
-    <!-- 1. HALAMAN REKOD HADIR (KIOSK HUD KAMERA) -->
+    <!-- 1. HALAMAN REKOD HADIR (PANTAS, MUDAH & SELESA) -->
     <section id="tab-rekod" class="tab-content">
       <div id="kotakImbasanKamera" class="relative bg-slate-950 rounded-3xl overflow-hidden shadow-2xl aspect-video md:aspect-[16/9] max-h-[640px] flex items-center justify-center transition-all duration-300 border border-slate-800">
         <video id="videoImbasan" autoplay muted playsinline class="w-full h-full object-cover"></video>
         <canvas id="canvasImbasan" class="absolute top-0 left-0 w-full h-full pointer-events-none object-cover"></canvas>
         
-        <!-- HUD ATAS: KAWALAN SKRIN PENUH -->
+        <!-- HUD ATAS -->
         <div class="absolute top-3 inset-x-3 md:inset-x-5 flex flex-wrap items-center justify-between gap-2 z-30 pointer-events-none">
           <div class="flex flex-wrap items-center gap-1.5 pointer-events-auto bg-black/60 backdrop-blur-md p-1.5 rounded-2xl border border-white/10 shadow-lg">
             <select id="pilihanJenis" class="bg-indigo-600 text-white font-bold text-xs px-3 py-1.5 rounded-xl border border-indigo-400/30">
@@ -204,7 +230,7 @@
           </div>
         </div>
 
-        <!-- HUD BAWAH: BUTANG MULA/HENTI -->
+        <!-- HUD BAWAH -->
         <div class="absolute bottom-4 inset-x-4 flex items-center justify-between z-30 pointer-events-none">
           <div id="bannerKemajuanAktiviti" class="hidden bg-black/70 backdrop-blur-md border border-indigo-400/30 text-white text-xs px-3.5 py-1.5 rounded-2xl pointer-events-auto">
             <span id="namaAktivitiLabel" class="font-bold text-amber-300">-</span> | Hadir: <span id="kiraanHadirAktivitiLabel" class="font-black text-emerald-400">0</span>/<span id="kiraanSasaranLabel">0</span>
@@ -221,7 +247,7 @@
           </div>
         </div>
 
-        <!-- POP-UP TOAST PENGECAMAN -->
+        <!-- TOAST PENGECAMAN PANTAS -->
         <div id="toastAlert" class="absolute top-16 left-1/2 -translate-x-1/2 z-50 transform transition-all duration-300 -translate-y-48 opacity-0 bg-emerald-600 text-white shadow-2xl rounded-2xl p-4 max-w-md w-[92%] flex items-center gap-4 border-2 border-emerald-300 pointer-events-none">
           <div class="bg-white text-emerald-600 rounded-xl p-2.5 shrink-0 shadow-md">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
@@ -417,7 +443,6 @@
           </div>
         </div>
 
-        <!-- Mod Sekolah -->
         <div id="statSeksyenSekolah" class="space-y-4">
           <div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl">
             <h4 class="text-xs font-extrabold uppercase text-amber-900 mb-1 flex items-center gap-1.5">
@@ -439,12 +464,10 @@
           </div>
         </div>
 
-        <!-- Mod Kelas -->
         <div id="statSeksyenKelas" class="hidden">
           <div id="gridStatistikKelasStat" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
         </div>
 
-        <!-- Mod Individu -->
         <div id="statSeksyenIndividu" class="hidden space-y-4">
           <div class="flex flex-wrap gap-2">
             <select id="statIndividuFilterKelas" onchange="kemaskiniPilihanMuridIndividu()" class="border rounded-xl p-2 text-xs font-semibold bg-slate-50 flex-1">
@@ -553,10 +576,11 @@
       </div>
     </section>
 
-    <!-- 6. HALAMAN ADMIN -->
+    <!-- 6. HALAMAN ADMIN (DAFTAR WAJAH BERPANDU, GALERI MURID, IMPORT PUKAL) -->
     <section id="tab-admin" class="tab-content hidden space-y-6">
-      <div class="max-w-4xl mx-auto space-y-4">
+      <div class="max-w-5xl mx-auto space-y-4">
         
+        <!-- Status Muat Naik APDM -->
         <div class="bg-white p-4 rounded-2xl border border-indigo-100 bg-indigo-50/30 flex flex-wrap items-center justify-between gap-3 shadow-sm">
           <div class="flex items-center gap-3">
             <div class="p-2.5 bg-indigo-600 text-white rounded-xl shadow-xs">
@@ -570,14 +594,21 @@
           <button onclick="muatTurunInfoAdmin()" class="px-3 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-bold transition">Segarkan</button>
         </div>
 
-        <div class="flex bg-white p-1 rounded-2xl border shadow-sm max-w-xs mx-auto">
-          <button onclick="tukarSubTabAdmin('daftar')" id="btnSubAdminDaftar" class="flex-1 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 text-white">Daftar Wajah</button>
-          <button onclick="tukarSubTabAdmin('import')" id="btnSubAdminImport" class="flex-1 py-1.5 text-xs font-bold rounded-xl text-slate-600">Import Pukal</button>
+        <!-- Butang Navigasi Sub-Tab Admin -->
+        <div class="flex bg-white p-1 rounded-2xl border shadow-sm max-w-md mx-auto">
+          <button onclick="tukarSubTabAdmin('daftar')" id="btnSubAdminDaftar" class="flex-1 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 text-white transition">Daftar Wajah</button>
+          <button onclick="tukarSubTabAdmin('galeri')" id="btnSubAdminGaleri" class="flex-1 py-1.5 text-xs font-bold rounded-xl text-slate-600 transition">Galeri Murid</button>
+          <button onclick="tukarSubTabAdmin('import')" id="btnSubAdminImport" class="flex-1 py-1.5 text-xs font-bold rounded-xl text-slate-600 transition">Import Pukal</button>
         </div>
 
+        <!-- SUB-TAB 1: DAFTAR WAJAH PINTAR (PANDUAN 3-SUDUT BIOMETRIK) -->
         <div id="subAdmin-daftar" class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
           <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-3">
-            <h3 class="text-sm font-bold text-slate-800 border-b pb-2">Pendaftaran Wajah (FaceID)</h3>
+            <div class="border-b pb-2">
+              <h3 class="text-sm font-bold text-slate-800">Pendaftaran Biometrik 3-Sudut</h3>
+              <p class="text-[11px] text-slate-500">Merekod 3 sudut (Depan, Kiri, Kanan) agar kehadiran pagi lebih lancar dan pantas.</p>
+            </div>
+
             <div>
               <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Kelas</label>
               <select id="filterTingkatan" onchange="kemaskiniPilihanMurid()" class="w-full border rounded-xl p-2 text-xs bg-slate-50"><option value="">Semua Kelas</option></select>
@@ -586,23 +617,102 @@
               <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Murid</label>
               <select id="pilihMurid" onchange="kemaskiniLabelMuridDaftar()" class="w-full border rounded-xl p-2 text-xs font-bold bg-slate-50"><option value="">-- Pilih Murid --</option></select>
             </div>
-            <div class="pt-2 flex gap-2">
-              <button onclick="mulaKameraDaftar()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-xl text-xs">Buka Kamera</button>
-              <button onclick="tangkapDanDaftarWajah()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs">Simpan Wajah</button>
+
+            <!-- Pilihan Kamera Hadapan & Belakang -->
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Pilihan Kamera</label>
+              <div class="flex gap-2">
+                <select id="pilihanKameraDaftar" onchange="tukarKameraDaftar()" class="flex-1 border rounded-xl p-2 text-xs font-bold bg-slate-50">
+                  <option value="user">Kamera Hadapan (Swafoto)</option>
+                  <option value="environment">Kamera Belakang (Utama)</option>
+                </select>
+                <button type="button" onclick="flipKameraDaftar()" title="Flip Kamera" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 border rounded-xl text-indigo-600 transition flex items-center justify-center">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </button>
+              </div>
             </div>
-            <p id="msgDaftarStatusBio" class="text-[11px] text-slate-500">Sedia membuka kamera.</p>
+
+            <!-- Petunjuk Langkah Interaktif Semasa Pendaftaran -->
+            <div id="kotakLangkahPendaftaran" class="p-3 bg-indigo-50 border border-indigo-200 rounded-xl space-y-2">
+              <div class="flex justify-between items-center text-xs font-bold text-indigo-900">
+                <span>Status Proses:</span>
+                <span id="labelPeratusDaftar">0/3 Sudut Selesai</span>
+              </div>
+              <div class="w-full bg-indigo-200 h-2 rounded-full overflow-hidden">
+                <div id="barKemajuanDaftar" class="bg-indigo-600 h-full w-0 transition-all duration-300"></div>
+              </div>
+              <div class="grid grid-cols-3 gap-1 text-[10px] text-center font-bold text-indigo-700 pt-1">
+                <span id="badgeStepDepan" class="p-1 rounded bg-white shadow-xs">1. Depan</span>
+                <span id="badgeStepKiri" class="p-1 rounded bg-slate-100 text-slate-400">2. Kiri</span>
+                <span id="badgeStepKanan" class="p-1 rounded bg-slate-100 text-slate-400">3. Kanan</span>
+              </div>
+            </div>
+
+            <div class="pt-2 flex gap-2">
+              <button onclick="mulaKameraDaftar()" class="w-1/3 bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 rounded-xl text-xs transition">Buka Kamera</button>
+              <button id="btnMulaDaftarPintar" onclick="mulakanPendaftaran3Sudut()" class="w-2/3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow transition flex items-center justify-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path></svg>
+                Mula Ambil Wajah 3-Sudut
+              </button>
+            </div>
+            <p id="msgDaftarStatusBio" class="text-[11px] text-slate-500 font-medium">Sedia membuka kamera.</p>
           </div>
 
+          <!-- Bekas Kamera Panduan Oval Interaktif -->
           <div id="kotakKameraDaftar" class="relative bg-black rounded-3xl overflow-hidden aspect-[4/3] flex items-center justify-center border-2 border-slate-300 shadow-xl">
             <video id="videoDaftar" autoplay muted playsinline class="w-full h-full object-cover"></video>
             <canvas id="canvasDaftar" class="absolute top-0 left-0 w-full h-full pointer-events-none object-cover"></canvas>
+            
             <div id="biometricOvalGuide" class="biometric-guide flex flex-col items-center justify-between py-3">
-              <span class="text-[10px] text-white/90 bg-black/60 px-2 py-0.5 rounded-full font-bold uppercase">Panduan Muka</span>
-              <span id="ovalFeedbackLabel" class="text-[11px] text-white bg-black/70 px-2.5 py-1 rounded-full font-bold">Sila Hadap Kamera</span>
+              <span id="ovalStepBadge" class="text-[10px] text-white/90 bg-black/60 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">Panduan Muka</span>
+              <span id="ovalFeedbackLabel" class="text-[12px] text-white bg-black/80 px-3 py-1.5 rounded-full font-bold shadow-md text-center">Sila Hadap Kamera</span>
             </div>
+
+            <!-- Arahan Panah Animasi di Skrin Kamera -->
+            <div id="overlayArahanArah" class="absolute inset-0 flex items-center justify-center pointer-events-none hidden">
+              <span id="ikonArahanArah" class="text-6xl text-white/80 animate-pulse drop-shadow-lg"></span>
+            </div>
+
+            <button onclick="flipKameraDaftar()" title="Flip Kamera Depan/Belakang" class="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full border border-white/20 z-30 transition">
+              <svg class="w-4 h-4 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
           </div>
         </div>
 
+        <!-- SUB-TAB 2: GALERI & PENGURUSAN MURID -->
+        <div id="subAdmin-galeri" class="hidden bg-white p-6 rounded-2xl border shadow-sm space-y-4">
+          <div class="flex flex-wrap justify-between items-center gap-3 border-b pb-3">
+            <div>
+              <h3 class="text-base font-bold text-slate-800">Senarai & Galeri Wajah Murid</h3>
+              <p class="text-xs text-slate-500">Lihat gambar wajah berdaftar, kemaskini maklumat murid, atau buang data biometrik.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <select id="galeriFilterKelas" onchange="paparkanGaleriMuridAdmin()" class="border rounded-xl p-2 text-xs bg-slate-50 font-bold">
+                <option value="">Semua Kelas</option>
+              </select>
+              <input type="text" id="galeriCariNama" oninput="paparkanGaleriMuridAdmin()" placeholder="Cari nama murid..." class="border rounded-xl p-2 text-xs bg-slate-50">
+            </div>
+          </div>
+
+          <div class="overflow-x-auto max-h-[500px] border rounded-xl">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100 text-slate-600 uppercase sticky top-0 z-10">
+                <tr>
+                  <th class="p-2.5">Wajah</th>
+                  <th class="p-2.5">Nama Murid</th>
+                  <th class="p-2.5">Kelas</th>
+                  <th class="p-2.5 text-center">Status Biometrik</th>
+                  <th class="p-2.5 text-right">Tindakan</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyGaleriMuridAdmin" class="divide-y divide-slate-100">
+                <tr><td colspan="5" class="p-4 text-center text-slate-400">Memuatkan data murid...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUB-TAB 3: IMPORT PUKAL -->
         <div id="subAdmin-import" class="hidden bg-white p-6 rounded-2xl border shadow-sm max-w-2xl mx-auto space-y-4">
           <h3 class="text-sm font-bold text-slate-800 border-b pb-2">Muat Naik Fail APDM Excel (.xlsx / .csv)</h3>
           <div class="border-2 border-dashed border-indigo-200 rounded-2xl p-6 text-center bg-indigo-50/50 hover:bg-indigo-50 cursor-pointer" onclick="document.getElementById('inputFailExcel').click()">
@@ -653,11 +763,19 @@
     let aktivitiDisahkan = false;
     let modKunciSasaran = null;
     let kameraPilihanSemasa = 'user';
+    let kameraDaftarPilihan = 'user';
     let penapisMasaAktif = 'hari_ini';
     let dataStatistikMaster = null;
     let cartaIndividuInstance = null;
 
-    // AUDIO
+    // Status Muat Turun Model & Data Latar Belakang
+    let modelAIBersedia = false;
+    let dataMuridBersedia = false;
+
+    // Status Pendaftaran 3-Sudut Pintar
+    let sedangDaftar3Sudut = false;
+
+    // AUDIO WEB SYNTHESIZER
     let audioCtx = null;
     function getAudioContext() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -678,6 +796,21 @@
         osc.stop(ctx.currentTime + 0.3);
       } catch (e) {}
     }
+    function mainBunyiSudutSelesai() {
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880.00, ctx.currentTime);
+        gain.gain.setValueAtTime(0.25, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.2);
+      } catch (e) {}
+    }
 
     function tunjukLoading(tajuk, mesej) {
       document.getElementById('loadingTajuk').innerText = tajuk;
@@ -686,25 +819,52 @@
     }
     function tutupLoading() { document.getElementById('modalLoading').classList.add('hidden'); }
 
-    // INISIALISASI
-    window.addEventListener('DOMContentLoaded', async () => {
-      tunjukLoading("Memulakan Sistem", "Sedang memuat turun model AI & pangkalan data...");
+    // INISIALISASI PANTAS: WEB APP DIBUKA SERTA-MERTA
+    window.addEventListener('DOMContentLoaded', () => {
       setMasaSekarangManual();
+      mulakanLatarBelakangSenyap();
+    });
+
+    async function mulakanLatarBelakangSenyap() {
       try {
+        await Promise.all([
+          muatTurunDataMurid(),
+          muatTurunDataAktiviti()
+        ]);
+        dataMuridBersedia = true;
+
         await Promise.all([
           faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_PATH),
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_PATH),
           faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_PATH)
         ]);
-        await muatTurunDataMurid();
-        await muatTurunDataAktiviti();
+        modelAIBersedia = true;
         binaPengecamWajah();
       } catch (e) {
-        console.error("Ralat init:", e);
-      } finally {
+        console.warn("Latar belakang:", e);
+      }
+    }
+
+    async function pastikanModelAISiap() {
+      if (!modelAIBersedia) {
+        tunjukLoading("Memuatkan Model AI", "Model AI sedang disiapkan...");
+        await Promise.all([
+          faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_PATH),
+          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_PATH),
+          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_PATH)
+        ]);
+        modelAIBersedia = true;
+        binaPengecamWajah();
         tutupLoading();
       }
-    });
+      if (!dataMuridBersedia) {
+        tunjukLoading("Memuat Data Murid", "Menghubungi Google Sheets...");
+        await muatTurunDataMurid();
+        dataMuridBersedia = true;
+        binaPengecamWajah();
+        tutupLoading();
+      }
+    }
 
     // KAWALAN AKSES KATA LALUAN
     function navigasiDenganKunci(jenis) {
@@ -752,7 +912,10 @@
 
       if (tabId === 'dashboard') muatTurunDashboard();
       if (tabId === 'statistik') janaRumusanStatistik();
-      if (tabId === 'admin') muatTurunInfoAdmin();
+      if (tabId === 'admin') {
+        muatTurunInfoAdmin();
+        paparkanGaleriMuridAdmin();
+      }
       if (tabId !== 'rekod') hentiKameraImbasan();
       if (tabId !== 'admin') hentiKameraDaftar();
       if (tabId === 'aktiviti') {
@@ -761,8 +924,10 @@
       }
     }
 
-    // ==================== OPERASI KAMERA REKOD HADIR ====================
+    // ==================== OPERASI KAMERA REKOD HADIR (PANTAS & LANCAR) ====================
     async function mulaKameraImbasan() {
+      await pastikanModelAISiap();
+
       const video = document.getElementById('videoImbasan');
       const canvas = document.getElementById('canvasImbasan');
       if (streamSemasa) streamSemasa.getTracks().forEach(t => t.stop());
@@ -795,6 +960,9 @@
               const kotak = (d.detection && d.detection.box) ? d.detection.box : d.box;
               if (!kotak) return;
 
+              // Had minima saiz muka supaya tidak imbas orang di latar belakang yang terlalu jauh
+              if (kotak.width < 90 || kotak.height < 90) return;
+
               if (padanan.label !== 'unknown') {
                 const [nama, tingkatan] = padanan.label.split(' | ');
                 ctx.lineWidth = 4; ctx.strokeStyle = '#10b981';
@@ -809,11 +977,11 @@
 
                 hantarKehadiran(nama, tingkatan);
               } else {
-                ctx.lineWidth = 3; ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 2.5; ctx.strokeStyle = '#ef4444';
                 ctx.strokeRect(kotak.x, kotak.y, kotak.width, kotak.height);
               }
             });
-          }, 600);
+          }, 450);
         };
       } catch (err) {
         alert("Gagal membuka kamera: " + err.message);
@@ -1035,7 +1203,6 @@
         document.getElementById('statJumlahTidakHadir').innerText = `${dataStatistikMaster.jumlahTidakHadirKumulatif || 0} Kali`;
         document.getElementById('statPurataHadir').innerText = `${dataStatistikMaster.purataKehadiran || "0.0"}%`;
 
-        // Amaran Murid Tidak Hadir Berturut-turut
         const kotakBerturut = document.getElementById('kotakMuridBerturut');
         kotakBerturut.innerHTML = '';
         if (!dataStatistikMaster.senaraiBerturut || dataStatistikMaster.senaraiBerturut.length === 0) {
@@ -1053,7 +1220,6 @@
           });
         }
 
-        // Senarai Tidak Hadir & Sebab
         const tbodyTidakHadir = document.getElementById('tbodyTidakHadirStat');
         tbodyTidakHadir.innerHTML = '';
         (dataStatistikMaster.senaraiTidakHadir || []).forEach(m => {
@@ -1073,7 +1239,6 @@
             </tr>`;
         });
 
-        // Pecahan Kelas
         const gridKelas = document.getElementById('gridStatistikKelasStat');
         gridKelas.innerHTML = '';
         (dataStatistikMaster.pecahanKelas || []).forEach(k => {
@@ -1324,7 +1489,7 @@
       } catch (err) { alert(err.message); } finally { tutupLoading(); }
     }
 
-    // ==================== ADMIN ====================
+    // ==================== ADMIN: GALERI & DAFTAR 3-SUDUT ====================
     async function muatTurunInfoAdmin() {
       const lbl = document.getElementById('labelUploadPukalTerkini');
       lbl.innerText = "Memeriksa...";
@@ -1341,18 +1506,169 @@
 
     function tukarSubTabAdmin(sub) {
       document.getElementById('subAdmin-daftar').classList.toggle('hidden', sub !== 'daftar');
+      document.getElementById('subAdmin-galeri').classList.toggle('hidden', sub !== 'galeri');
       document.getElementById('subAdmin-import').classList.toggle('hidden', sub !== 'import');
+
       document.getElementById('btnSubAdminDaftar').className = (sub === 'daftar') ? "flex-1 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 text-white" : "flex-1 py-1.5 text-xs font-bold rounded-xl text-slate-600";
+      document.getElementById('btnSubAdminGaleri').className = (sub === 'galeri') ? "flex-1 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 text-white" : "flex-1 py-1.5 text-xs font-bold rounded-xl text-slate-600";
       document.getElementById('btnSubAdminImport').className = (sub === 'import') ? "flex-1 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 text-white" : "flex-1 py-1.5 text-xs font-bold rounded-xl text-slate-600";
+
+      if (sub === 'galeri') paparkanGaleriMuridAdmin();
+      if (sub !== 'daftar') hentiKameraDaftar();
     }
 
+    function paparkanGaleriMuridAdmin() {
+      const fK = document.getElementById('galeriFilterKelas').value;
+      const carian = (document.getElementById('galeriCariNama').value || '').toLowerCase().trim();
+      const tbody = document.getElementById('tbodyGaleriMuridAdmin');
+      tbody.innerHTML = '';
+
+      const muridDitapis = senaraiMurid.filter(m => (!fK || m.tingkatan === fK) && (!carian || m.nama.toLowerCase().includes(carian)));
+
+      if (muridDitapis.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Tiada murid ditemui dalam senarai ini.</td></tr>';
+        return;
+      }
+
+      muridDitapis.forEach((m) => {
+        const adaWajah = m.descriptor && (
+          (Array.isArray(m.descriptor) && m.descriptor.length >= 128) ||
+          (Array.isArray(m.descriptor) && Array.isArray(m.descriptor[0]))
+        );
+        
+        let htmlGambar = `
+          <div class="w-10 h-10 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-400 font-bold text-[10px]">
+            TIADA
+          </div>`;
+        if (m.gambar && m.gambar.startsWith("data:image")) {
+          htmlGambar = `<img src="${m.gambar}" alt="${m.nama}" class="w-10 h-10 rounded-full object-cover border-2 border-emerald-500 shadow-xs">`;
+        }
+
+        const badgeStatus = adaWajah
+          ? `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">✓ 3-Sudut Lengkap</span>`
+          : `<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded text-[10px] font-bold">✗ Belum Ada</span>`;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-2.5">${htmlGambar}</td>
+            <td class="p-2.5 font-bold text-slate-800">${m.nama}</td>
+            <td class="p-2.5 font-semibold text-indigo-700">${m.tingkatan}</td>
+            <td class="p-2.5 text-center">${badgeStatus}</td>
+            <td class="p-2.5 text-right space-x-1">
+              <button onclick="bukaModalEditMurid('${m.nama.replace(/'/g, "\\'")}', '${m.tingkatan}')" class="px-2 py-1 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-[10px] font-bold transition">
+                Kemaskini
+              </button>
+              ${adaWajah ? `
+                <button onclick="buangWajahMurid('${m.nama.replace(/'/g, "\\'")}', '${m.tingkatan}')" class="px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[10px] font-bold transition">
+                  Buang Wajah
+                </button>
+              ` : `
+                <button onclick="pilihMuridUntukDaftarSegera('${m.nama.replace(/'/g, "\\'")}', '${m.tingkatan}')" class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold transition">
+                  Daftar Wajah
+                </button>
+              `}
+              <button onclick="padamMuridAdmin('${m.nama.replace(/'/g, "\\'")}', '${m.tingkatan}')" class="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-bold transition">
+                Padam
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function bukaModalEditMurid(nama, tingkatan) {
+      document.getElementById('editMuridOldNama').value = nama;
+      document.getElementById('editMuridOldTingkatan').value = tingkatan;
+      document.getElementById('editMuridNewNama').value = nama;
+      document.getElementById('editMuridNewTingkatan').value = tingkatan;
+      document.getElementById('modalEditMuridAdmin').classList.remove('hidden');
+    }
+    function tutupModalEditMurid() { document.getElementById('modalEditMuridAdmin').classList.add('hidden'); }
+
+    async function hantarKemaskiniMuridAdmin(e) {
+      e.preventDefault();
+      const oldNama = document.getElementById('editMuridOldNama').value;
+      const oldTingkatan = document.getElementById('editMuridOldTingkatan').value;
+      const newNama = document.getElementById('editMuridNewNama').value;
+      const newTingkatan = document.getElementById('editMuridNewTingkatan').value;
+
+      tunjukLoading("Mengemaskini Maklumat", `Sedang mengubah rekod ${oldNama}...`);
+      try {
+        const res = await fetch(GAS_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "kemaskiniMurid", oldNama, oldTingkatan, newNama, newTingkatan })
+        });
+        const d = await res.json();
+        if (d.success) {
+          tutupModalEditMurid();
+          await muatTurunDataMurid();
+          binaPengecamWajah();
+          paparkanGaleriMuridAdmin();
+          alert("Maklumat murid berjaya dikemaskini!");
+        } else {
+          alert("Ralat mengemaskini maklumat murid.");
+        }
+      } catch (err) { alert(err.message); } finally { tutupLoading(); }
+    }
+
+    async function buangWajahMurid(nama, tingkatan) {
+      if (!confirm(`Padamkan biometrik wajah bagi ${nama} (${tingkatan})? Data biometrik akan dibersihkan.`)) return;
+
+      tunjukLoading("Memadam Wajah", `Memadamkan biometrik ${nama}...`);
+      try {
+        const res = await fetch(GAS_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "buangWajahMurid", nama, tingkatan })
+        });
+        const d = await res.json();
+        if (d.success) {
+          await muatTurunDataMurid();
+          binaPengecamWajah();
+          paparkanGaleriMuridAdmin();
+          alert(`Wajah bagi ${nama} telah dipadam.`);
+        }
+      } catch (err) { alert(err.message); } finally { tutupLoading(); }
+    }
+
+    async function padamMuridAdmin(nama, tingkatan) {
+      if (!confirm(`AMARAN: Anda pasti ingin MEMADAM sepenuhnya murid ${nama} (${tingkatan}) daripada sistem?`)) return;
+
+      tunjukLoading("Memadam Murid", `Menghapuskan rekod ${nama}...`);
+      try {
+        const res = await fetch(GAS_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "padamMurid", nama, tingkatan })
+        });
+        const d = await res.json();
+        if (d.success) {
+          await muatTurunDataMurid();
+          binaPengecamWajah();
+          paparkanGaleriMuridAdmin();
+          alert(`Murid ${nama} telah dipadamkan.`);
+        }
+      } catch (err) { alert(err.message); } finally { tutupLoading(); }
+    }
+
+    function pilihMuridUntukDaftarSegera(nama, tingkatan) {
+      tukarSubTabAdmin('daftar');
+      document.getElementById('filterTingkatan').value = tingkatan;
+      kemaskiniPilihanMurid();
+      document.getElementById('pilihMurid').value = `${nama}|${tingkatan}`;
+      kemaskiniLabelMuridDaftar();
+      mulaKameraDaftar();
+    }
+
+    // ==================== PENDAFTARAN 3-SUDUT DENGAN ARAHAN KIRI/KANAN ====================
     async function muatTurunDataMurid() {
       try {
         const res = await fetch(`${GAS_API_URL}?action=getMurid`);
         senaraiMurid = await res.json();
         const kelasSet = [...new Set(senaraiMurid.map(m => m.tingkatan))].filter(Boolean).sort();
 
-        ['filterTingkatan', 'manualFilterKelas', 'statIndividuFilterKelas'].forEach(id => {
+        ['filterTingkatan', 'manualFilterKelas', 'statIndividuFilterKelas', 'galeriFilterKelas'].forEach(id => {
           const el = document.getElementById(id);
           if (el) {
             el.innerHTML = '<option value="">Semua Kelas</option>';
@@ -1368,11 +1684,23 @@
     function binaPengecamWajah() {
       const labeled = [];
       senaraiMurid.forEach(m => {
-        if (m.descriptor && Array.isArray(m.descriptor) && m.descriptor.length >= 128) {
-          labeled.push(new faceapi.LabeledFaceDescriptors(`${m.nama} | ${m.tingkatan}`, [new Float32Array(m.descriptor)]));
+        if (m.descriptor) {
+          let descs = [];
+          if (Array.isArray(m.descriptor) && Array.isArray(m.descriptor[0])) {
+            // Pangkalan data mengandungi 3 sudut (Depan, Kiri, Kanan)
+            descs = m.descriptor.map(arr => new Float32Array(arr));
+          } else if (Array.isArray(m.descriptor) && m.descriptor.length >= 128) {
+            descs = [new Float32Array(m.descriptor)];
+          }
+          if (descs.length > 0) {
+            labeled.push(new faceapi.LabeledFaceDescriptors(`${m.nama} | ${m.tingkatan}`, descs));
+          }
         }
       });
-      if (labeled.length > 0) faceMatcher = new faceapi.FaceMatcher(labeled, 0.55);
+      if (labeled.length > 0) {
+        // Ambang 0.46: Sangat pantas dan memaafkan sedikit sengetan kepala kerana ketiga-tiga sudut sudah didaftarkan!
+        faceMatcher = new faceapi.FaceMatcher(labeled, 0.46);
+      }
     }
 
     function kemaskiniPilihanMurid() {
@@ -1380,45 +1708,279 @@
       const sel = document.getElementById('pilihMurid');
       sel.innerHTML = '<option value="">-- Sila Pilih Murid --</option>';
       senaraiMurid.filter(m => !f || m.tingkatan === f).forEach(m => {
-        const tanda = (m.descriptor && Array.isArray(m.descriptor)) ? '✓' : '✗';
+        const tanda = (m.descriptor) ? '✓' : '✗';
         sel.innerHTML += `<option value="${m.nama}|${m.tingkatan}">[${tanda}] ${m.nama} (${m.tingkatan})</option>`;
       });
     }
 
+    function kemaskiniLabelMuridDaftar() {
+      const val = document.getElementById('pilihMurid').value;
+      const statusBio = document.getElementById('msgDaftarStatusBio');
+      if (val) {
+        const [nama, tingkatan] = val.split('|');
+        const obj = senaraiMurid.find(m => m.nama === nama && m.tingkatan === tingkatan);
+        if (obj && obj.descriptor) {
+          statusBio.innerHTML = `<span class="text-emerald-600 font-bold">✓ Wajah bagi ${nama} telah ada. Boleh ambil semula jika ingin kemaskini 3 sudut.</span>`;
+        } else {
+          statusBio.innerText = `Sedia mendaftar wajah 3-sudut bagi ${nama} (${tingkatan}).`;
+        }
+      }
+    }
+
+    function flipKameraDaftar() {
+      const sel = document.getElementById('pilihanKameraDaftar');
+      kameraDaftarPilihan = (kameraDaftarPilihan === 'user') ? 'environment' : 'user';
+      sel.value = kameraDaftarPilihan;
+      tukarKameraDaftar();
+    }
+
+    async function tukarKameraDaftar() {
+      kameraDaftarPilihan = document.getElementById('pilihanKameraDaftar').value;
+      if (streamDaftar) {
+        await mulaKameraDaftar();
+      }
+    }
+
     async function mulaKameraDaftar() {
+      await pastikanModelAISiap();
+
       const video = document.getElementById('videoDaftar');
       if (streamDaftar) streamDaftar.getTracks().forEach(t => t.stop());
       try {
-        streamDaftar = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } } });
+        streamDaftar = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: kameraDaftarPilihan, width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
         video.srcObject = streamDaftar;
-        document.getElementById('msgDaftarStatusBio').innerText = "Kamera aktif.";
+        document.getElementById('msgDaftarStatusBio').innerText = `Kamera aktif (${kameraDaftarPilihan === 'user' ? 'Hadapan' : 'Belakang'}). Tekan butang 'Mula Ambil Wajah 3-Sudut'.`;
       } catch (err) { alert("Gagal buka kamera: " + err.message); }
     }
+
     function hentiKameraDaftar() {
+      if (liveDaftarTimer) clearInterval(liveDaftarTimer);
       if (streamDaftar) streamDaftar.getTracks().forEach(t => t.stop());
       streamDaftar = null;
     }
 
-    async function tangkapDanDaftarWajah() {
+    // PENGESAN SUDUT KEPALA (HEAD YAW DETECTION DARI 68 TITIK LANDMARK)
+    function periksaSudutMuka(landmarks) {
+      if (!landmarks) return 'tiada';
+      const noseTip = landmarks.getNose()[3]; // Titik 30
+      const leftEye = landmarks.getLeftEye()[0]; // Titik 36
+      const rightEye = landmarks.getRightEye()[3]; // Titik 45
+      const eyeMidX = (leftEye.x + rightEye.x) / 2;
+      const eyeDist = Math.abs(rightEye.x - leftEye.x);
+      if (eyeDist === 0) return 'depan';
+
+      const offsetRatio = (noseTip.x - eyeMidX) / eyeDist;
+
+      // Jika kamera hadapan (swafoto), arah pandangan berpusing
+      const isMirrored = (kameraDaftarPilihan === 'user');
+
+      if (offsetRatio < -0.14) {
+        return isMirrored ? 'kanan' : 'kiri';
+      } else if (offsetRatio > 0.14) {
+        return isMirrored ? 'kiri' : 'kanan';
+      }
+      return 'depan';
+    }
+
+    // ALIRAN KERJA PENDAFTARAN BIOMETRIK 3-SUDUT DENGAN PANDUAN SUARA & VISUAL
+    async function mulakanPendaftaran3Sudut() {
       const val = document.getElementById('pilihMurid').value;
-      if (!val) { alert("Sila pilih murid."); return; }
+      if (!val) { alert("Sila pilih murid dari senarai terlebih dahulu!"); return; }
       const [nama, tingkatan] = val.split('|');
       const video = document.getElementById('videoDaftar');
-      tunjukLoading("Mengekstrak Wajah", `Menganalisis biometrik ${nama}...`);
+
+      if (!video.srcObject) {
+        await mulaKameraDaftar();
+      }
+
+      sedangDaftar3Sudut = true;
+      const btn = document.getElementById('btnMulaDaftarPintar');
+      btn.disabled = true;
+      btn.classList.add('opacity-50');
+
+      const guide = document.getElementById('biometricOvalGuide');
+      const feedback = document.getElementById('ovalFeedbackLabel');
+      const stepBadge = document.getElementById('ovalStepBadge');
+      const overlayArah = document.getElementById('overlayArahanArah');
+      const ikonArah = document.getElementById('ikonArahanArah');
+      const barKemajuan = document.getElementById('barKemajuanDaftar');
+      const labelPeratus = document.getElementById('labelPeratusDaftar');
+
+      const bDepan = document.getElementById('badgeStepDepan');
+      const bKiri = document.getElementById('badgeStepKiri');
+      const bKanan = document.getElementById('badgeStepKanan');
+
+      // Reset Paparan Langkah
+      barKemajuan.style.width = '0%';
+      labelPeratus.innerText = '0/3 Sudut Selesai';
+      bDepan.className = 'p-1 rounded bg-indigo-600 text-white font-bold';
+      bKiri.className = 'p-1 rounded bg-slate-100 text-slate-400';
+      bKanan.className = 'p-1 rounded bg-slate-100 text-slate-400';
+
+      const collectedDescriptors = [];
+      let snapshotGambar = "";
 
       try {
-        const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
-        if (!detection) { tutupLoading(); alert("Wajah tidak dikesan dengan jelas."); return; }
+        // ==================== LANGKAH 1: PANDANG DEPAN ====================
+        stepBadge.innerText = "LANGKAH 1 DARI 3";
+        feedback.innerText = "Pandang Terus ke Hadapan";
+        overlayArah.classList.remove('hidden');
+        ikonArah.innerText = "🎯";
+
+        let descDepan = await tungguDanTangkapSudut('depan', "Pandang Terus ke Hadapan 🎯");
+        collectedDescriptors.push(descDepan.descriptor);
+        snapshotGambar = descDepan.gambar;
+
+        mainBunyiSudutSelesai();
+        guide.classList.add('capture');
+        setTimeout(() => guide.classList.remove('capture'), 300);
+
+        barKemajuan.style.width = '33%';
+        labelPeratus.innerText = '1/3 Sudut Selesai';
+        bDepan.className = 'p-1 rounded bg-emerald-100 text-emerald-800 font-bold';
+        bKiri.className = 'p-1 rounded bg-indigo-600 text-white font-bold';
+
+        await new Promise(r => setTimeout(r, 600));
+
+        // ==================== LANGKAH 2: PUSING KIRI ====================
+        stepBadge.innerText = "LANGKAH 2 DARI 3";
+        feedback.innerText = "Pusing Wajah Sedikit ke KIRI ⬅️";
+        ikonArah.innerText = "⬅️";
+
+        let descKiri = await tungguDanTangkapSudut('kiri', "Pusing Wajah Sedikit ke KIRI ⬅️");
+        collectedDescriptors.push(descKiri.descriptor);
+
+        mainBunyiSudutSelesai();
+        guide.classList.add('capture');
+        setTimeout(() => guide.classList.remove('capture'), 300);
+
+        barKemajuan.style.width = '66%';
+        labelPeratus.innerText = '2/3 Sudut Selesai';
+        bKiri.className = 'p-1 rounded bg-emerald-100 text-emerald-800 font-bold';
+        bKanan.className = 'p-1 rounded bg-indigo-600 text-white font-bold';
+
+        await new Promise(r => setTimeout(r, 600));
+
+        // ==================== LANGKAH 3: PUSING KANAN ====================
+        stepBadge.innerText = "LANGKAH 3 DARI 3";
+        feedback.innerText = "Pusing Wajah Sedikit ke KANAN ➡️";
+        ikonArah.innerText = "➡️";
+
+        let descKanan = await tungguDanTangkapSudut('kanan', "Pusing Wajah Sedikit ke KANAN ➡️");
+        collectedDescriptors.push(descKanan.descriptor);
+
+        mainBunyiSudutSelesai();
+        guide.classList.add('capture');
+        setTimeout(() => guide.classList.remove('capture'), 300);
+
+        barKemajuan.style.width = '100%';
+        labelPeratus.innerText = '3/3 Sudut Selesai!';
+        bKanan.className = 'p-1 rounded bg-emerald-100 text-emerald-800 font-bold';
+
+        overlayArah.classList.add('hidden');
+        feedback.innerText = "✓ Pendaftaran Selesai! Menyimpan...";
+
+        // Simpan ketiga-tiga deskriptor ke Google Sheets
+        tunjukLoading("Menyimpan Profil Wajah", `Menyimpan 3 sudut wajah bagi ${nama}...`);
 
         await fetch(GAS_API_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: "daftarWajah", nama, tingkatan, descriptor: Array.from(detection.descriptor) })
+          body: JSON.stringify({
+            action: "daftarWajah",
+            nama,
+            tingkatan,
+            descriptor: collectedDescriptors.map(d => Array.from(d)),
+            gambar: snapshotGambar
+          })
         });
-        alert(`Wajah bagi ${nama} berjaya didaftarkan!`);
+
+        alert(`Hebat! Pendaftaran biometrik 3-sudut bagi ${nama} berjaya direkodkan. Kehadiran pagi kini boleh dicam dengan serta-merta!`);
         await muatTurunDataMurid();
         binaPengecamWajah();
-      } catch (err) { alert(err.message); } finally { tutupLoading(); }
+        paparkanGaleriMuridAdmin();
+
+      } catch (err) {
+        alert("Pendaftaran dibatalkan atau terhenti: " + err.message);
+      } finally {
+        overlayArah.classList.add('hidden');
+        stepBadge.innerText = "Panduan Muka";
+        feedback.innerText = "Sedia membuka kamera";
+        btn.disabled = false;
+        btn.classList.remove('opacity-50');
+        sedangDaftar3Sudut = false;
+        tutupLoading();
+      }
+    }
+
+    // PEMBANTU MENUNGGU MURID MEMUSINGKAN KEPALA KE SUDUT SASARAN
+    function tungguDanTangkapSudut(sudutSasaran, mesejPanduan) {
+      return new Promise((resolve, reject) => {
+        const video = document.getElementById('videoDaftar');
+        const feedback = document.getElementById('ovalFeedbackLabel');
+        const guide = document.getElementById('biometricOvalGuide');
+
+        let kiraanKestabilan = 0;
+        let cubaanMasa = 0;
+
+        const pemasaSemak = setInterval(async () => {
+          cubaanMasa++;
+          if (!streamDaftar || !sedangDaftar3Sudut) {
+            clearInterval(pemasaSemak);
+            reject(new Error("Kamera dimatikan"));
+            return;
+          }
+
+          const detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+          if (detection) {
+            const sudutSemasa = periksaSudutMuka(detection.landmarks);
+
+            if (sudutSemasa === sudutSasaran) {
+              kiraanKestabilan++;
+              guide.classList.add('ready');
+              feedback.innerText = `Bagus! Tahan kedudukan (${kiraanKestabilan}/3)...`;
+
+              if (kiraanKestabilan >= 3) {
+                clearInterval(pemasaSemak);
+
+                // Tangkap gambar crop resolusi ringan dari sudut hadapan
+                let fotoSnapshot = "";
+                if (sudutSasaran === 'depan') {
+                  const snapCanvas = document.createElement('canvas');
+                  snapCanvas.width = 160; snapCanvas.height = 160;
+                  const snapCtx = snapCanvas.getContext('2d');
+                  const minDim = Math.min(video.videoWidth, video.videoHeight);
+                  snapCtx.drawImage(video, (video.videoWidth - minDim) / 2, (video.videoHeight - minDim) / 2, minDim, minDim, 0, 0, 160, 160);
+                  fotoSnapshot = snapCanvas.toDataURL('image/jpeg', 0.65);
+                }
+
+                resolve({
+                  descriptor: detection.descriptor,
+                  gambar: fotoSnapshot
+                });
+              }
+            } else {
+              kiraanKestabilan = 0;
+              guide.classList.remove('ready');
+              feedback.innerText = mesejPanduan;
+            }
+          } else {
+            guide.classList.remove('ready');
+            feedback.innerText = "Wajah tidak dikesan. Masuk ke dalam oval.";
+          }
+
+          // Timeout sekiranya murid tidak bergerak melebihi 25 saat
+          if (cubaanMasa > 50) {
+            clearInterval(pemasaSemak);
+            reject(new Error("Masa tamat. Sila cuba lagi."));
+          }
+        }, 300);
+      });
     }
 
     function bacaFailExcel(e) {
