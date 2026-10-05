@@ -5,12 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistem Kehadiran Pengecaman Wajah - SMK Kamarul Ariffin</title>
   
+  <!-- Favicon Logo Rasmi Sekolah -->
   <link rel="icon" type="image/png" href="logo.png">
+  <link rel="shortcut icon" type="image/png" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
   
-  <!-- Tailwind CSS & Enjin Pustaka Luaran -->
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Face-api.js Engine -->
   <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
+  <!-- SheetJS Library -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Chart.js Engine -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -43,7 +49,7 @@
     <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center border border-slate-100 flex flex-col items-center">
       <div class="relative w-16 h-16 mb-3 flex items-center justify-center">
         <div class="absolute inset-0 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin"></div>
-        <img src="logo.png" alt="Logo" class="w-8 h-8 object-contain rounded-full shadow-sm">
+        <img src="logo.png" alt="Logo" class="w-8 h-8 object-contain rounded-full shadow-sm" onerror="this.src='Logo.png'">
       </div>
       <h3 id="loadingTajuk" class="text-base font-extrabold text-slate-800 tracking-tight">Memproses Data...</h3>
       <p id="loadingMesej" class="text-xs text-slate-500 mt-1 leading-relaxed">Sila tunggu sebentar.</p>
@@ -53,7 +59,7 @@
   <!-- ==================== MODAL KATA LALUAN ==================== -->
   <div id="modalKataLaluan" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100000] flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
-      <img src="logo.png" alt="Logo" class="w-12 h-12 object-contain mx-auto mb-2">
+      <img src="logo.png" alt="Logo" class="w-12 h-12 object-contain mx-auto mb-2" onerror="this.src='Logo.png'">
       <h3 id="tajukModalKunci" class="text-lg font-bold text-slate-800">Akses Pengesahan</h3>
       <p id="peneranganModalKunci" class="text-xs text-slate-500 mt-1 mb-4">Sila masukkan kata laluan untuk membuka modul ini.</p>
       <input type="password" id="inputKataLaluan" placeholder="Kata laluan" class="w-full border rounded-xl px-3.5 py-2.5 text-center text-sm font-semibold tracking-wider focus:ring-2 focus:ring-indigo-500 mb-2">
@@ -166,14 +172,14 @@
     </div>
   </div>
 
-  <!-- ==================== HEADER & NAVIGASI (6 HALAMAN) ==================== -->
+  <!-- ==================== HEADER & NAVIGASI ==================== -->
   <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
       <div class="flex items-center gap-3">
-        <img src="logo.png" alt="Logo" class="w-9 h-9 object-contain rounded-md bg-white p-0.5 shadow-sm">
+        <img src="logo.png" alt="Logo" class="w-9 h-9 object-contain rounded-md bg-white p-0.5 shadow-sm" onerror="this.src='Logo.png'">
         <div>
           <h1 class="text-base font-bold tracking-wide">SMK KAMARUL ARIFFIN</h1>
-          <p class="text-xs text-indigo-200">Sistem Pengecaman Wajah & Kehadiran</p>
+          <p class="text-xs text-indigo-200">Sistem Pengecaman Wajah & Kehadiran (selamat.semekar.com)</p>
         </div>
       </div>
 
@@ -190,7 +196,6 @@
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
           Admin
         </button>
-        <!-- Butang Log Keluar Pantas Admin (Hanya muncul jika admin aktif) -->
         <button id="btnKunciAdminSesi" onclick="kunciSemulaAdmin()" class="hidden px-2.5 py-1 text-xs bg-rose-600 hover:bg-rose-700 rounded-lg text-white font-bold transition ml-1">
           Kunci Sesi
         </button>
@@ -638,7 +643,7 @@
           <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-3">
             <div class="border-b pb-2">
               <h3 class="text-sm font-bold text-slate-800">Pendaftaran Biometrik 3-Sudut</h3>
-              <p class="text-[11px] text-slate-500">Merekod 3 sudut (Depan, Kiri, Kanan) agar kehadiran pagi lebih lancar dan pantas.</p>
+              <p class="text-[11px] text-slate-500">Merekod 3 sudut (Depan, Kiri, Kanan) agar imbasan pagi lancar dan pantas.</p>
             </div>
 
             <div>
@@ -712,7 +717,7 @@
           <div class="flex flex-wrap justify-between items-center gap-3 border-b pb-3">
             <div>
               <h3 class="text-base font-bold text-slate-800">Senarai & Galeri Wajah Murid</h3>
-              <p class="text-xs text-slate-500">Lihat gambar wajah berdaftar, kemaskini maklumat murid, atau buang data biometrik.</p>
+              <p class="text-xs text-slate-500">Lihat foto berdaftar, kemaskini maklumat murid, atau buang data biometrik.</p>
             </div>
             <div class="flex flex-wrap gap-2">
               <select id="galeriFilterKelas" onchange="paparkanGaleriMuridAdmin()" class="border rounded-xl p-2 text-xs bg-slate-50 font-bold">
@@ -800,6 +805,9 @@
     let dataMuridBersedia = false;
     let sedangDaftar3Sudut = false;
 
+    // Memori Pelayar Untuk Elak Spam Imbasan Bertindih
+    const memoriImbasanHariIni = new Map();
+
     // AUDIO WEB SYNTHESIZER
     let audioCtx = null;
     function getAudioContext() {
@@ -844,7 +852,7 @@
     }
     function tutupLoading() { document.getElementById('modalLoading').classList.add('hidden'); }
 
-    // ==================== PENGURUSAN SESI KATA LALUAN PERSISTEN (8 JAM) ====================
+    // PENGURUSAN SESI KATA LALUAN PERSISTEN (8 JAM)
     function semakSesiSediaAda() {
       const expAdmin = localStorage.getItem('adminAuthExp');
       if (expAdmin && Date.now() < parseInt(expAdmin, 10)) {
@@ -1084,28 +1092,59 @@
       document.getElementById('statusImbasan').innerText = "Kamera Mati";
     }
 
+    // PENGHANTARAN KEHADIRAN (HANYA SCAN PERTAMA TERAWAL)
     async function hantarKehadiran(nama, tingkatan) {
-      const sekarang = Date.now();
-      if (cooldownScan.has(nama) && sekarang - cooldownScan.get(nama) < 25000) return;
-      cooldownScan.set(nama, sekarang);
-
       const jenis = document.getElementById('pilihanJenis').value;
       const kategori = document.getElementById('pilihanKategori').value;
-      let namaAktiviti = (kategori === 'Aktiviti' && aktivitiSemasaDipilih) ? aktivitiSemasaDipilih.nama : "";
+      let namaAktiviti = (kategori === 'Aktiviti' && aktivitiSemasaDipilih) ? aktivitiSemasaDipilih.nama : "-";
+
+      const kunciSesi = `${nama.toUpperCase()}___${kategori}___${namaAktiviti}___${jenis}`;
+
+      // JIKA SUDAH DISCAN SEBELUM INI: Pamerkan toast tanpa spam Google Sheets
+      if (memoriImbasanHariIni.has(kunciSesi)) {
+        const rekodSediaAda = memoriImbasanHariIni.get(kunciSesi);
+        const sekarang = Date.now();
+        if (!cooldownScan.has(nama) || sekarang - cooldownScan.get(nama) > 10000) {
+          cooldownScan.set(nama, sekarang);
+          tunjukToast(nama, `Jam ${rekodSediaAda.masa} (${rekodSediaAda.status}) - Telah Direkodkan`, jenis);
+        }
+        return;
+      }
+
+      const sekarang = Date.now();
+      if (cooldownScan.has(nama) && sekarang - cooldownScan.get(nama) < 15000) return;
+      cooldownScan.set(nama, sekarang);
 
       tunjukToast(nama, "Menyimpan ke Google Sheets...", jenis);
+
       try {
         const res = await fetch(GAS_API_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: "rekodKehadiran", nama, tingkatan, kategori, jenis, namaAktiviti, kaedah: "Pengecaman Wajah" })
+          body: JSON.stringify({ 
+            action: "rekodKehadiran", 
+            nama, 
+            tingkatan, 
+            kategori, 
+            jenis, 
+            namaAktiviti, 
+            kaedah: "Pengecaman Wajah" 
+          })
         });
         const d = await res.json();
         if (d && d.success) {
           mainBunyiHadir();
-          tunjukToast(nama, `Jam ${d.masa} (${d.status})`, jenis);
+          memoriImbasanHariIni.set(kunciSesi, { masa: d.masa, status: d.status });
+
+          if (d.sudahAda) {
+            tunjukToast(nama, `Jam ${d.masa} (${d.status}) - Scan Terawal Dikekalkan`, jenis);
+          } else {
+            tunjukToast(nama, `Jam ${d.masa} (${d.status})`, jenis);
+          }
         }
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error("Ralat simpan kehadiran:", e);
+      }
     }
 
     function tunjukToast(nama, info, jenis) {
@@ -1885,7 +1924,6 @@
         senaraiMurid = await res.json();
         const kelasSet = [...new Set(senaraiMurid.map(m => m.tingkatan))].filter(Boolean).sort();
 
-        // Kekalkan pilihan kelas sedia ada pada dropdown
         ['filterTingkatan', 'manualFilterKelas', 'statIndividuFilterKelas', 'galeriFilterKelas'].forEach(id => {
           const el = document.getElementById(id);
           if (el) {
@@ -2041,7 +2079,6 @@
       const collectedDescriptors = [];
       let snapshotGambar = "";
 
-      // Rekod pilihan kelas semasa agar kekal selepas pendaftaran murid
       const kelasPilihanSemasa = document.getElementById('filterTingkatan').value;
 
       try {
@@ -2068,7 +2105,7 @@
 
         // Langkah 2: Kiri
         stepBadge.innerText = "LANGKAH 2 DARI 3";
-        feedback.innerText = "Pusing Wajah Sedikit ke KIRI ⬅️";
+        feedback.innerText = "Pusing Wajah Sedikit ke KIRI ⬅️️";
         ikonArah.innerText = "⬅️";
 
         let descKiri = await tungguDanTangkapSudut('kiri', "Pusing Wajah Sedikit ke KIRI ⬅️");
@@ -2090,7 +2127,7 @@
         feedback.innerText = "Pusing Wajah Sedikit ke KANAN ➡️";
         ikonArah.innerText = "➡️";
 
-        let descKanan = await tungguDanTangkapSudut('kanan', "Pusing Wajah Sedikit ke KANAN ➡️️");
+        let descKanan = await tungguDanTangkapSudut('kanan', "Pusing Wajah Sedikit ke KANAN ➡️");
         collectedDescriptors.push(descKanan.descriptor);
 
         mainBunyiSudutSelesai();
@@ -2120,7 +2157,6 @@
 
         alert(`Hebat! Pendaftaran biometrik 3-sudut bagi ${nama} berjaya direkodkan.`);
         
-        // Muat turun data baharu & kekalkan pilihan kelas
         await muatTurunDataMurid();
         if (kelasPilihanSemasa) {
           document.getElementById('filterTingkatan').value = kelasPilihanSemasa;
