@@ -10,7 +10,7 @@
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Face-api.js AI Engine -->
+  <!-- Face-api.js Engine -->
   <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
   <!-- SheetJS Library -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -21,7 +21,7 @@
   <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
       
-      <!-- Logo Sekolah & Tajuk -->
+      <!-- Logo & Tajuk -->
       <div class="flex items-center gap-3">
         <img src="logo.png" alt="Logo Sekolah" class="w-10 h-10 object-contain rounded-md bg-white p-0.5 shadow-sm">
         <div>
@@ -82,6 +82,64 @@
         <button onclick="tutupModalAdmin()" class="flex-1 py-2 rounded-xl text-slate-600 text-sm font-semibold hover:bg-slate-100 transition">Batal</button>
         <button onclick="sahkanKataLaluan()" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition">Buka Akses</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL SUSULAN: CAM WAJAH / REKOD HADIR (MURID TIDAK HADIR) ==================== -->
+  <div id="modalSusulanTidakHadir" class="fixed inset-0 bg-black/65 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+      <button onclick="tutupModalSusulan()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+
+      <div class="text-center mb-4">
+        <span class="text-xs bg-amber-100 text-amber-800 font-bold px-2.5 py-0.5 rounded-full uppercase">Perekodan Susulan</span>
+        <h3 id="susulanNamaMurid" class="text-base font-extrabold text-slate-800 mt-2 truncate">NAMA MURID</h3>
+        <p id="susulanKelasMurid" class="text-xs text-indigo-600 font-semibold">TINGKATAN</p>
+      </div>
+
+      <!-- Kamera Pengesahan Wajah Mini -->
+      <div class="mb-4">
+        <div class="relative bg-black rounded-xl overflow-hidden aspect-video flex items-center justify-center border border-slate-200">
+          <video id="videoSusulan" autoplay muted playsinline class="w-full h-full object-cover"></video>
+          <canvas id="canvasSusulan" class="absolute top-0 left-0 w-full h-full pointer-events-none"></canvas>
+          <div id="statusKameraSusulan" class="absolute inset-0 bg-slate-900/80 flex items-center justify-center text-xs text-white p-3 text-center">
+            Tekan butang di bawah untuk membuka kamera dan cam wajah murid.
+          </div>
+        </div>
+        <div class="mt-2 flex gap-2">
+          <button type="button" onclick="mulaKameraSusulan()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold py-2 rounded-lg transition flex items-center justify-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+            Buka Kamera & Cam Muka
+          </button>
+        </div>
+        <p id="msgCamSusulan" class="text-[11px] font-semibold text-center text-emerald-600 mt-1 min-h-[16px]"></p>
+      </div>
+
+      <!-- Borang Pemilihan Status & Masa -->
+      <form onsubmit="hantarRekodSusulan(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Status Kehadiran</label>
+          <select id="susulanStatusPilihan" required class="w-full border rounded-lg p-2.5 text-xs font-bold bg-slate-50 focus:ring-2 focus:ring-indigo-400">
+            <option value="Hadir Lewat">Hadir Lewat (Datang Selepas Waktu Rasmi)</option>
+            <option value="Tercicir">Tercicir (Hadir Tetapi Terlupa Imbas Pagi)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Masa Masuk Sekolah</label>
+          <input type="time" id="susulanMasaMasuk" required class="w-full border rounded-lg p-2.5 text-xs font-bold bg-slate-50 focus:ring-2 focus:ring-indigo-400">
+        </div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="tutupModalSusulan()" class="w-1/3 py-2.5 rounded-xl text-slate-600 text-xs font-bold hover:bg-slate-100 transition">
+            Batal
+          </button>
+          <button type="submit" id="btnHantarSusulan" class="w-2/3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold py-2.5 shadow transition">
+            Sahkan & Simpan Kehadiran
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -275,23 +333,22 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 4: JADUAL AKTIVITI (PILIHAN KELAS & INDIVIDU) ==================== -->
+    <!-- ==================== TAB 4: JADUAL AKTIVITI (ADMIN) ==================== -->
     <section id="tab-admin-aktiviti" class="tab-content hidden">
       <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-4xl mx-auto">
         <div class="flex items-center justify-between mb-4 border-b pb-3">
           <div>
             <h2 class="text-base md:text-lg font-bold text-slate-800">Daftar Jadual Aktiviti & Pilihan Murid</h2>
-            <p class="text-xs text-slate-500">Pilih satu kelas penuh, separuh kelas, atau murid individu merentas kelas (cth: pasukan sukan).</p>
+            <p class="text-xs text-slate-500">Pilih satu kelas penuh, separuh kelas, atau murid individu merentas kelas.</p>
           </div>
           <span class="text-xs bg-indigo-100 text-indigo-800 font-bold px-2.5 py-1 rounded">Mod Fleksibel</span>
         </div>
 
         <form id="formAktiviti" onsubmit="simpanAktiviti(event)" class="space-y-5">
-          <!-- Butiran Asas Aktiviti -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div class="md:col-span-3">
               <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nama Aktiviti</label>
-              <input type="text" id="actNama" required placeholder="Contoh: Latihan Bola Sepak Sekolah / Kelas Tambahan Matematik" class="w-full border rounded-lg p-2.5 text-sm font-semibold">
+              <input type="text" id="actNama" required placeholder="Contoh: Latihan Bola Sepak / Kelas Tambahan Matematik" class="w-full border rounded-lg p-2.5 text-sm font-semibold">
             </div>
             <div>
               <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Tarikh</label>
@@ -307,7 +364,6 @@
             </div>
           </div>
 
-          <!-- Mod Pemilihan Murid Sasaran -->
           <div class="border rounded-2xl p-4 bg-slate-50 border-slate-200 space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
               <h3 class="text-sm font-bold text-slate-700">Pilih Murid Yang Terlibat</h3>
@@ -321,18 +377,13 @@
               </div>
             </div>
 
-            <!-- Kaedah 1: Butang Pintas Pilihan Pantas Mengikut Kelas Penuh -->
             <div>
-              <label class="block text-xs font-bold text-slate-600 mb-2 uppercase">1. Pilih Mengikut Kelas Penuh (Klik Untuk Pilih / Nyahpilih Semua Murid Kelas Tersebut):</label>
-              <div id="kotakCheckboxKelas" class="flex flex-wrap gap-2">
-                <!-- Checkbox kelas dijana automatik melalui JS -->
-              </div>
+              <label class="block text-xs font-bold text-slate-600 mb-2 uppercase">1. Pilih Mengikut Kelas Penuh:</label>
+              <div id="kotakCheckboxKelas" class="flex flex-wrap gap-2"></div>
             </div>
 
-            <!-- Kaedah 2: Pilihan Murid Individu / Pasukan Merentas Kelas -->
             <div class="pt-2 border-t">
-              <label class="block text-xs font-bold text-slate-600 mb-2 uppercase">2. Pilih Murid Secara Individu (Boleh Tapis Ikut Kelas / Cari Nama):</label>
-              
+              <label class="block text-xs font-bold text-slate-600 mb-2 uppercase">2. Pilih Murid Secara Individu / Rentas Kelas:</label>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
                 <select id="filterKelasPemilihan" onchange="paparkanSenaraiPilihanIndividu()" class="border rounded-lg p-2 text-xs bg-white font-medium">
                   <option value="">Semua Kelas</option>
@@ -340,10 +391,7 @@
                 <input type="text" id="cariNamaPemilihan" oninput="paparkanSenaraiPilihanIndividu()" placeholder="Cari nama murid..." class="border rounded-lg p-2 text-xs bg-white">
               </div>
 
-              <!-- Senarai Checkbox Murid Individu -->
-              <div id="senaraiMuridIndividuKotak" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-56 overflow-y-auto p-2 bg-white rounded-xl border border-slate-200 text-xs">
-                <!-- Item murid dijana melalui JS -->
-              </div>
+              <div id="senaraiMuridIndividuKotak" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-56 overflow-y-auto p-2 bg-white rounded-xl border border-slate-200 text-xs"></div>
             </div>
           </div>
 
@@ -354,61 +402,108 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 5: DASHBOARD STATISTIK ==================== -->
+    <!-- ==================== TAB 5: DASHBOARD KEHADIRAN PERSEKOLAHAN LENGKAP ==================== -->
     <section id="tab-dashboard" class="tab-content hidden">
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-        <div class="bg-white p-4 rounded-xl border border-slate-200">
-          <p class="text-xs font-medium text-slate-500">Jumlah Murid APDM</p>
+      
+      <!-- Kad Metrik Statistik Sesi Persekolahan Biasa -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-[11px] font-semibold text-slate-500 uppercase">Jumlah Enrolmen</p>
           <h3 id="dashTotal" class="text-2xl font-black text-slate-800 mt-1">0</h3>
         </div>
-        <div class="bg-white p-4 rounded-xl border border-slate-200">
-          <p class="text-xs font-medium text-slate-500">Hadir Hari Ini</p>
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-[11px] font-semibold text-slate-500 uppercase">Hadir Persekolahan</p>
           <h3 id="dashHadir" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
         </div>
-        <div class="bg-white p-4 rounded-xl border border-slate-200">
-          <p class="text-xs font-medium text-slate-500">Hadir Lambat (>7:20)</p>
-          <h3 id="dashLambat" class="text-2xl font-black text-amber-500 mt-1">0</h3>
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm bg-indigo-50/40">
+          <p class="text-[11px] font-semibold text-indigo-700 uppercase">Peratus Kehadiran</p>
+          <h3 id="dashPeratus" class="text-2xl font-black text-indigo-700 mt-1">0%</h3>
         </div>
-        <div class="bg-white p-4 rounded-xl border border-slate-200">
-          <p class="text-xs font-medium text-slate-500">Masih Di Sekolah</p>
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-[11px] font-semibold text-rose-500 uppercase">Tidak Hadir</p>
+          <h3 id="dashTidakHadir" class="text-2xl font-black text-rose-600 mt-1">0</h3>
+        </div>
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-[11px] font-semibold text-amber-500 uppercase">Hadir Lewat (>7:20)</p>
+          <h3 id="dashLambat" class="text-2xl font-black text-amber-600 mt-1">0</h3>
+        </div>
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-[11px] font-semibold text-blue-500 uppercase">Masih Di Sekolah</p>
           <h3 id="dashMasih" class="text-2xl font-black text-blue-600 mt-1">0</h3>
-        </div>
-        <div class="bg-white p-4 rounded-xl border border-slate-200">
-          <p class="text-xs font-medium text-slate-500">Sudah Keluar</p>
-          <h3 id="dashKeluar" class="text-2xl font-black text-purple-600 mt-1">0</h3>
         </div>
       </div>
 
+      <!-- BAHAGIAN UTAMA: SENARAI MURID TIDAK HADIR HARI INI -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4 border-b pb-3">
+          <div>
+            <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+              <span>Senarai Murid Tidak Hadir Sesi Persekolahan Hari Ini</span>
+              <span id="labelKiraanTidakHadir" class="text-xs bg-rose-100 text-rose-800 px-2.5 py-0.5 rounded-full font-bold">0 Orang</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">Murid yang belum mengimbas muka pagi ini boleh dicam semula wajahnya atau direkod sebagai Hadir Lewat / Tercicir.</p>
+          </div>
+
+          <!-- Alat Penapis Carian -->
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="filterKelasTidakHadir" onchange="tapisSenaraiTidakHadir()" class="border rounded-lg p-2 text-xs bg-slate-50 font-semibold text-slate-700">
+              <option value="">Semua Kelas</option>
+            </select>
+            <input type="text" id="cariNamaTidakHadir" oninput="tapisSenaraiTidakHadir()" placeholder="Cari nama murid..." class="border rounded-lg p-2 text-xs bg-slate-50">
+          </div>
+        </div>
+
+        <div class="overflow-x-auto max-h-80 border rounded-xl">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-100 text-slate-600 uppercase sticky top-0 z-10">
+              <tr>
+                <th class="p-2.5">Bil</th>
+                <th class="p-2.5">Nama Murid</th>
+                <th class="p-2.5">Tingkatan / Kelas</th>
+                <th class="p-2.5 text-center">Status Wajah</th>
+                <th class="p-2.5 text-right">Tindakan Pengesahan</th>
+              </tr>
+            </thead>
+            <tbody id="tBodyTidakHadir" class="divide-y divide-slate-100">
+              <tr><td colspan="5" class="p-4 text-center text-slate-400">Memuatkan data kehadiran...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Jadual Tambahan: Murid Datang Lambat & Murid Masih Di Sekolah -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Senarai Murid Lambat -->
+        
+        <!-- Jadual Murid Hadir Lambat -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
           <h3 class="text-sm font-bold text-slate-700 mb-3 flex items-center justify-between">
             <span>Senarai Murid Lewat (> 7:20 Pagi)</span>
-            <span class="text-xs bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">Lewat</span>
+            <span class="text-xs bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">Rekod Lewat</span>
           </h3>
-          <div class="overflow-y-auto max-h-72">
+          <div class="overflow-y-auto max-h-72 border rounded-xl">
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-50 text-slate-500 uppercase sticky top-0">
                 <tr>
                   <th class="p-2.5">Nama</th>
                   <th class="p-2.5">Kelas</th>
                   <th class="p-2.5">Masa Masuk</th>
+                  <th class="p-2.5">Status</th>
                 </tr>
               </thead>
               <tbody id="tBodyLambat" class="divide-y divide-slate-100">
-                <tr><td colspan="3" class="p-4 text-center text-slate-400">Tiada rekod murid lambat hari ini.</td></tr>
+                <tr><td colspan="4" class="p-4 text-center text-slate-400">Tiada rekod murid lambat hari ini.</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Senarai Murid Masih Ada di Kawasan Sekolah -->
+        <!-- Jadual Murid Masih Berada di Kawasan Sekolah -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
           <h3 class="text-sm font-bold text-slate-700 mb-3 flex items-center justify-between">
             <span>Murid Masih Berada Di Sekolah</span>
             <span class="text-xs bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full font-bold">Dalam Kawasan</span>
           </h3>
-          <div class="overflow-y-auto max-h-72">
+          <div class="overflow-y-auto max-h-72 border rounded-xl">
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-50 text-slate-500 uppercase sticky top-0">
                 <tr>
@@ -423,6 +518,7 @@
             </table>
           </div>
         </div>
+
       </div>
     </section>
 
@@ -437,9 +533,14 @@
     let senaraiMurid = [];
     let senaraiAktiviti = [];
     let senaraiPukalPratonton = [];
-    let muridDipilihUntukAktiviti = new Set(); // Kunci: "NAMA___KELAS"
+    let muridDipilihUntukAktiviti = new Set();
     let muridTelahHadirAktivitiSemasa = new Set();
     let aktivitiSemasaDipilih = null;
+
+    let senaraiMuridTidakHadirMaster = [];
+    let muridSusulanSemasa = null;
+    let streamSusulan = null;
+    let scanSusulanTimer = null;
 
     let faceMatcher = null;
     let streamSemasa = null;
@@ -448,7 +549,7 @@
     let tabSasaranAdmin = null;
     let adminDisahkan = false;
 
-    // Inisialisasi Apabila Web Dibuka
+    // Inisialisasi Apabila Laman Dimuatkan
     window.addEventListener('DOMContentLoaded', async () => {
       setMsgImbasan("Memuatkan model AI pengecaman wajah...");
       try {
@@ -457,7 +558,7 @@
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_PATH),
           faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_PATH)
         ]);
-        setMsgImbasan("Model AI siap. Memuat turun data murid...");
+        setMsgImbasan("Model AI siap. Memuat turun pangkalan data...");
         await muatTurunDataMurid();
         await muatTurunDataAktiviti();
         binaPengecamWajah();
@@ -467,7 +568,7 @@
       }
     });
 
-    // Kawalan Akses Pentadbir
+    // Kawalan Akses Pentadbir & Navigasi
     function navigasiDenganKunci(tabId) {
       if (adminDisahkan) {
         navigasi(tabId);
@@ -525,11 +626,240 @@
       if (tabId === 'admin-aktiviti') binaKomponenPemilihanMuridAktiviti();
     }
 
-    // ==================== LOGIK PEMILIHAN MURID AKTIVITI (KELAS & INDIVIDU) ====================
+    // ==================== DASHBOARD STATISTIK & SUSULAN TIDAK HADIR ====================
+    async function muatTurunDashboard() {
+      try {
+        const res = await fetch(`${GAS_API_URL}?action=getDashboard`);
+        const d = await res.json();
+
+        // Metrik Utama
+        document.getElementById('dashTotal').innerText = d.jumlahMurid;
+        document.getElementById('dashHadir').innerText = d.hadirHariIni;
+        document.getElementById('dashPeratus').innerText = d.peratusHadir + "%";
+        document.getElementById('dashTidakHadir').innerText = d.jumlahTidakHadir;
+        document.getElementById('dashLambat').innerText = d.jumlahLambat;
+        document.getElementById('dashMasih').innerText = d.masihDiSekolah;
+
+        document.getElementById('labelKiraanTidakHadir').innerText = d.jumlahTidakHadir + " Orang";
+
+        // Simpan senarai tidak hadir untuk penapisan dinamik
+        senaraiMuridTidakHadirMaster = d.senaraiTidakHadir || [];
+        
+        // Kemaskini Dropdown Kelas Tidak Hadir
+        const kelasUnik = [...new Set(senaraiMuridTidakHadirMaster.map(m => m.tingkatan))].filter(Boolean).sort();
+        const selFilter = document.getElementById('filterKelasTidakHadir');
+        selFilter.innerHTML = '<option value="">Semua Kelas</option>';
+        kelasUnik.forEach(k => {
+          selFilter.innerHTML += `<option value="${k}">${k}</option>`;
+        });
+
+        tapisSenaraiTidakHadir();
+
+        // Senarai Hadir Lambat
+        const tbodyLambat = document.getElementById('tBodyLambat');
+        tbodyLambat.innerHTML = '';
+        if (!d.senaraiLambat || d.senaraiLambat.length === 0) {
+          tbodyLambat.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Tiada murid lambat hari ini.</td></tr>';
+        } else {
+          d.senaraiLambat.forEach(m => {
+            tbodyLambat.innerHTML += `
+              <tr class="hover:bg-slate-50">
+                <td class="p-2.5 font-medium text-slate-800">${m.nama}</td>
+                <td class="p-2.5 text-slate-500">${m.tingkatan}</td>
+                <td class="p-2.5 text-amber-600 font-bold">${m.masa}</td>
+                <td class="p-2.5 text-slate-500">${m.status || "Lewat"}</td>
+              </tr>`;
+          });
+        }
+
+        // Senarai Masih Di Sekolah
+        const tbodyMasih = document.getElementById('tBodyMasih');
+        tbodyMasih.innerHTML = '';
+        if (!d.senaraiMasihDiSekolah || d.senaraiMasihDiSekolah.length === 0) {
+          tbodyMasih.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400">Semua murid telah keluar sekolah.</td></tr>';
+        } else {
+          d.senaraiMasihDiSekolah.forEach(m => {
+            tbodyMasih.innerHTML += `
+              <tr class="hover:bg-slate-50">
+                <td class="p-2.5 font-medium text-slate-800">${m.nama}</td>
+                <td class="p-2.5 text-slate-500">${m.tingkatan}</td>
+                <td class="p-2.5 text-blue-600 font-bold">${m.masaMasuk}</td>
+              </tr>`;
+          });
+        }
+      } catch (e) {
+        console.error("Gagal muat data dashboard:", e);
+      }
+    }
+
+    function tapisSenaraiTidakHadir() {
+      const fKelas = document.getElementById('filterKelasTidakHadir').value;
+      const carian = document.getElementById('cariNamaTidakHadir').value.toLowerCase().trim();
+      const tbody = document.getElementById('tBodyTidakHadir');
+
+      tbody.innerHTML = '';
+
+      const muridDitapis = senaraiMuridTidakHadirMaster.filter(m => {
+        const padanK = !fKelas || m.tingkatan === fKelas;
+        const padanN = !carian || m.nama.toLowerCase().includes(carian);
+        return padanK && padanN;
+      });
+
+      if (muridDitapis.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-emerald-600 font-medium">Tiada murid dalam senarai tidak hadir bagi tapisan ini (Semua telah hadir!).</td></tr>';
+        return;
+      }
+
+      muridDitapis.forEach((m, idx) => {
+        const statusWajahBadge = m.adaWajah 
+          ? `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">✓ Wajah Ada</span>`
+          : `<span class="bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[10px] font-bold">✗ Belum Daftar</span>`;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-2.5 text-slate-400 font-mono">${idx + 1}</td>
+            <td class="p-2.5 font-bold text-slate-800">${m.nama}</td>
+            <td class="p-2.5 text-indigo-700 font-semibold">${m.tingkatan}</td>
+            <td class="p-2.5 text-center">${statusWajahBadge}</td>
+            <td class="p-2.5 text-right">
+              <button onclick="bukaModalSusulan('${m.nama.replace(/'/g, "\\'")}', '${m.tingkatan}')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow-sm transition inline-flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                Cam Wajah / Rekod Hadir
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // ==================== OPERASI MODAL SUSULAN TIDAK HADIR ====================
+    function bukaModalSusulan(nama, tingkatan) {
+      muridSusulanSemasa = { nama, tingkatan };
+      document.getElementById('susulanNamaMurid').innerText = nama;
+      document.getElementById('susulanKelasMurid').innerText = tingkatan;
+
+      // Tetapkan masa sekarang secara automatik (HH:MM)
+      const now = new Date();
+      const jam = String(now.getHours()).padStart(2, '0');
+      const minit = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('susulanMasaMasuk').value = `${jam}:${minit}`;
+
+      // Reset info kamera
+      document.getElementById('statusKameraSusulan').classList.remove('hidden');
+      document.getElementById('msgCamSusulan').innerText = '';
+
+      document.getElementById('modalSusulanTidakHadir').classList.remove('hidden');
+    }
+
+    function tutupModalSusulan() {
+      hentikanKameraSusulan();
+      document.getElementById('modalSusulanTidakHadir').classList.add('hidden');
+      muridSusulanSemasa = null;
+    }
+
+    async function mulaKameraSusulan() {
+      const video = document.getElementById('videoSusulan');
+      const canvas = document.getElementById('canvasSusulan');
+      const overlayStatus = document.getElementById('statusKameraSusulan');
+      const msg = document.getElementById('msgCamSusulan');
+
+      hentikanKameraSusulan();
+
+      try {
+        streamSusulan = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        video.srcObject = streamSusulan;
+        overlayStatus.classList.add('hidden');
+        msg.innerText = "Kamera aktif. Sedang mengesan wajah...";
+
+        video.onloadedmetadata = () => {
+          faceapi.matchDimensions(canvas, { width: video.videoWidth, height: video.videoHeight });
+
+          scanSusulanTimer = setInterval(async () => {
+            if (!faceMatcher || !muridSusulanSemasa) return;
+
+            const detection = await faceapi.detectSingleFace(video)
+              .withFaceLandmarks()
+              .withFaceDescriptor();
+
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (detection) {
+              const resized = faceapi.resizeResults(detection, { width: video.videoWidth, height: video.videoHeight });
+              const padanan = faceMatcher.findBestMatch(detection.descriptor);
+
+              if (padanan.label.includes(muridSusulanSemasa.nama)) {
+                new faceapi.draw.DrawBox(resized.box, {
+                  label: `Disahkan: ${muridSusulanSemasa.nama}`,
+                  boxColor: '#10b981'
+                }).draw(canvas);
+                msg.innerHTML = `<span class="text-emerald-600 font-bold">✓ Wajah Disahkan Berpadanan!</span>`;
+              } else {
+                new faceapi.draw.DrawBox(resized.box, {
+                  label: padanan.label !== 'unknown' ? padanan.label : 'Wajah Lain',
+                  boxColor: '#f59e0b'
+                }).draw(canvas);
+                msg.innerHTML = `<span class="text-amber-600">Wajah dikesan (${padanan.label})</span>`;
+              }
+            }
+          }, 500);
+        };
+      } catch (err) {
+        alert("Gagal membuka kamera: " + err.message);
+      }
+    }
+
+    function hentikanKameraSusulan() {
+      if (scanSusulanTimer) clearInterval(scanSusulanTimer);
+      if (streamSusulan) streamSusulan.getTracks().forEach(t => t.stop());
+      const canvas = document.getElementById('canvasSusulan');
+      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    async function hantarRekodSusulan(e) {
+      e.preventDefault();
+      if (!muridSusulanSemasa) return;
+
+      const btn = document.getElementById('btnHantarSusulan');
+      btn.disabled = true;
+      btn.innerText = "Menyimpan Rekod...";
+
+      const statusPilihan = document.getElementById('susulanStatusPilihan').value;
+      const masaMasuk = document.getElementById('susulanMasaMasuk').value;
+
+      try {
+        const res = await fetch(GAS_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "rekodSusulanTidakHadir",
+            nama: muridSusulanSemasa.nama,
+            tingkatan: muridSusulanSemasa.tingkatan,
+            pilihanStatus: statusPilihan,
+            masa: masaMasuk
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          tutupModalSusulan();
+          alert(`Kehadiran bagi ${data.nama} berjaya direkodkan sebagai [${data.status}] pada jam ${data.masa}.`);
+          await muatTurunDashboard(); // Kemas kini dashboard serta-merta
+        } else {
+          alert("Ralat semasa menyimpan rekod: " + data.error);
+        }
+      } catch (err) {
+        alert("Ralat sambungan: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Sahkan & Simpan Kehadiran";
+      }
+    }
+
+    // ==================== LOGIK PEMILIHAN AKTIVITI ====================
     function binaKomponenPemilihanMuridAktiviti() {
       const kelasSet = [...new Set(senaraiMurid.map(m => m.tingkatan))].filter(Boolean).sort();
       
-      // 1. Bina Checkbox Pilihan Cepat Mengikut Kelas
       const cBoxKotak = document.getElementById('kotakCheckboxKelas');
       cBoxKotak.innerHTML = '';
       kelasSet.forEach(k => {
@@ -540,7 +870,6 @@
         `;
       });
 
-      // 2. Dropdown Filter Murid Individu
       const filterSel = document.getElementById('filterKelasPemilihan');
       filterSel.innerHTML = '<option value="">Semua Kelas</option>';
       kelasSet.forEach(k => {
@@ -624,7 +953,7 @@
       e.preventDefault();
 
       if (muridDipilihUntukAktiviti.size === 0) {
-        alert("Sila pilih sekurang-kurangnya satu orang murid atau satu kelas untuk aktiviti ini.");
+        alert("Sila pilih sekurang-kurangnya seorang murid atau satu kelas untuk aktiviti ini.");
         return;
       }
 
@@ -655,7 +984,6 @@
       navigasi('rekod');
     }
 
-    // ==================== SEMAKAN AKTIVITI (30 MINIT SEBELUM MULA) ====================
     async function muatTurunDataAktiviti() {
       try {
         const res = await fetch(`${GAS_API_URL}?action=getAktiviti`);
@@ -695,7 +1023,6 @@
         const tamat = new Date(`${act.tarikh}T${act.masaTamat}`);
         const bezaMinit = (mula - kini) / (1000 * 60);
 
-        // Hanya keluar 30 minit sebelum acara bermula sehingga waktu tamat
         if (act.tarikh === tarikhHariIni && bezaMinit <= 30 && kini <= tamat) {
           sel.innerHTML += `<option value="${act.id}">${act.nama} (${act.masaMula} - ${act.masaTamat}) [${act.jumlahSasaran} Murid]</option>`;
           ada = true;
@@ -726,7 +1053,7 @@
       }
     }
 
-    // ==================== OPERASI KAMERA & PENGECAMAN PUKAL ====================
+    // ==================== OPERASI KAMERA PUKAL (SESI PAGI / PETANG) ====================
     async function mulaKameraImbasan() {
       const kameraFacing = document.getElementById('pilihanKamera').value;
       const video = document.getElementById('videoImbasan');
@@ -750,7 +1077,6 @@
           scanTimer = setInterval(async () => {
             if (!faceMatcher) return;
 
-            // Pengesanan pukal untuk ramai murid serentak
             const detections = await faceapi.detectAllFaces(video)
               .withFaceLandmarks()
               .withFaceDescriptors();
@@ -1002,7 +1328,7 @@
       }
     }
 
-    // ==================== OPERASI PENDAFTARAN WAJAH ====================
+    // ==================== DAFTAR WAJAH ====================
     async function muatTurunDataMurid() {
       try {
         const res = await fetch(`${GAS_API_URL}?action=getMurid`);
@@ -1092,52 +1418,6 @@
         binaPengecamWajah();
       } else {
         msg.innerText = "Ralat simpanan: " + (d.error || d.message);
-      }
-    }
-
-    // ==================== DASHBOARD STATISTIK ====================
-    async function muatTurunDashboard() {
-      try {
-        const res = await fetch(`${GAS_API_URL}?action=getDashboard`);
-        const d = await res.json();
-
-        document.getElementById('dashTotal').innerText = d.jumlahMurid;
-        document.getElementById('dashHadir').innerText = d.hadirHariIni;
-        document.getElementById('dashLambat').innerText = d.jumlahLambat;
-        document.getElementById('dashMasih').innerText = d.masihDiSekolah;
-        document.getElementById('dashKeluar').innerText = d.sudahKeluar;
-
-        const tbodyLambat = document.getElementById('tBodyLambat');
-        tbodyLambat.innerHTML = '';
-        if (!d.senaraiLambat || d.senaraiLambat.length === 0) {
-          tbodyLambat.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400">Tiada murid lambat hari ini.</td></tr>';
-        } else {
-          d.senaraiLambat.forEach(m => {
-            tbodyLambat.innerHTML += `
-              <tr class="hover:bg-slate-50">
-                <td class="p-2.5 font-medium text-slate-800">${m.nama}</td>
-                <td class="p-2.5 text-slate-500">${m.tingkatan}</td>
-                <td class="p-2.5 text-amber-600 font-bold">${m.masa}</td>
-              </tr>`;
-          });
-        }
-
-        const tbodyMasih = document.getElementById('tBodyMasih');
-        tbodyMasih.innerHTML = '';
-        if (!d.senaraiMasihDiSekolah || d.senaraiMasihDiSekolah.length === 0) {
-          tbodyMasih.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400">Semua murid telah keluar sekolah.</td></tr>';
-        } else {
-          d.senaraiMasihDiSekolah.forEach(m => {
-            tbodyMasih.innerHTML += `
-              <tr class="hover:bg-slate-50">
-                <td class="p-2.5 font-medium text-slate-800">${m.nama}</td>
-                <td class="p-2.5 text-slate-500">${m.tingkatan}</td>
-                <td class="p-2.5 text-blue-600 font-bold">${m.masaMasuk}</td>
-              </tr>`;
-          });
-        }
-      } catch (e) {
-        console.error("Gagal muat dashboard:", e);
       }
     }
   </script>
