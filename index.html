@@ -16,11 +16,11 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
-    /* Penyelarasan video dan canvas supaya bingkai pengecaman selari tepat */
+    /* Penyelarasan video dan canvas */
     #videoImbasan, #canvasImbasan, #videoDaftar, #canvasDaftar, #videoSusulan, #canvasSusulan {
       object-fit: cover;
     }
-    /* Mod Skrin Penuh Responsif Merentas Semua Peranti */
+    /* Mod Skrin Penuh Responsif */
     .custom-fullscreen {
       position: fixed !important;
       top: 0 !important;
@@ -37,7 +37,7 @@
 <body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col font-sans">
 
   <!-- ==================== MODAL DIALOG MEMUAT DATA ==================== -->
-  <div id="modalLoading" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[999999] flex items-center justify-center p-4 hidden">
+  <div id="modalLoading" class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm z-[999999] flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center border border-slate-100 flex flex-col items-center">
       <div class="relative w-20 h-20 mb-4 flex items-center justify-center">
         <div class="absolute inset-0 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin"></div>
@@ -45,7 +45,7 @@
       </div>
       
       <h3 id="loadingTajuk" class="text-base font-extrabold text-slate-800 tracking-tight">Sedang Memproses Data...</h3>
-      <p id="loadingMesej" class="text-xs text-slate-500 mt-2 leading-relaxed">Sistem sedang berhubung dengan pangkalan data Google Sheets. Sila tunggu sebentar.</p>
+      <p id="loadingMesej" class="text-xs text-slate-500 mt-2 leading-relaxed">Sistem sedang memproses data. Sila tunggu sebentar.</p>
       
       <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-5">
         <div class="bg-indigo-600 h-full w-2/3 rounded-full animate-pulse"></div>
@@ -124,7 +124,6 @@
         <p id="susulanKelasMurid" class="text-xs text-indigo-600 font-semibold">TINGKATAN</p>
       </div>
 
-      <!-- Kamera Pengesahan Wajah Mini -->
       <div class="mb-4">
         <div class="relative bg-black rounded-xl overflow-hidden aspect-video flex items-center justify-center border border-slate-200">
           <video id="videoSusulan" autoplay muted playsinline class="w-full h-full object-cover"></video>
@@ -180,7 +179,6 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Arah Pergerakan (Masuk / Keluar) -->
           <div>
             <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Arah Imbasan</label>
             <select id="pilihanJenis" class="w-full border rounded-lg p-2.5 bg-slate-50 font-bold text-slate-700 focus:ring-2 focus:ring-indigo-400">
@@ -189,7 +187,6 @@
             </select>
           </div>
 
-          <!-- Kategori Sesi -->
           <div>
             <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Kategori Sesi</label>
             <select id="pilihanKategori" onchange="tukarKategori()" class="w-full border rounded-lg p-2.5 bg-slate-50 font-bold text-slate-700 focus:ring-2 focus:ring-indigo-400">
@@ -198,7 +195,6 @@
             </select>
           </div>
 
-          <!-- Pilihan Aktiviti (Aktif 30 Minit Sebelum) -->
           <div id="kotakAktiviti" class="hidden">
             <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Pilihan Aktiviti (-30 Minit)</label>
             <select id="selectAktivitiAktif" onchange="kemaskiniMaklumatAktivitiSemasa()" class="w-full border rounded-lg p-2.5 bg-amber-50 border-amber-300 font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-400">
@@ -206,7 +202,6 @@
             </select>
           </div>
 
-          <!-- Pilihan Kamera Hadapan / Belakang (Boleh bertukar secara langsung) -->
           <div>
             <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Pilihan Kamera</label>
             <select id="pilihanKamera" onchange="tukarKameraSemasaBerjalan()" class="w-full border rounded-lg p-2.5 bg-slate-50 font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-400">
@@ -216,7 +211,6 @@
           </div>
         </div>
 
-        <!-- Banner Info Kemajuan Kehadiran Aktiviti Semasa -->
         <div id="bannerKemajuanAktiviti" class="hidden mt-4 p-3 bg-indigo-50 border border-indigo-200 rounded-xl flex flex-wrap items-center justify-between text-xs font-medium text-indigo-900 gap-2">
           <div>
             Aktiviti: <span id="namaAktivitiLabel" class="font-bold">-</span>
@@ -227,7 +221,6 @@
           </div>
         </div>
 
-        <!-- Bar Butang Kawalan Kamera -->
         <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-3">
           <button id="btnMulaKamera" onclick="mulaKameraImbasan()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm transition flex items-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path></svg>
@@ -239,13 +232,11 @@
             Selesai Kamera
           </button>
 
-          <!-- Butang Tukar Kamera Cepat (Flip) -->
           <button type="button" onclick="flipKameraCepat()" class="bg-slate-800 hover:bg-slate-900 text-white font-semibold px-4 py-2.5 rounded-xl shadow-sm transition flex items-center gap-2 text-xs md:text-sm">
             <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
             Tukar Kamera
           </button>
 
-          <!-- Butang Mod Skrin Penuh (Fullscreen) -->
           <button type="button" onclick="toggleSkrinPenuh()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2.5 rounded-xl shadow-sm transition flex items-center gap-2 text-xs md:text-sm ml-auto">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
             <span id="teksSkrinPenuh">Mod Skrin Penuh</span>
@@ -253,28 +244,25 @@
         </div>
       </div>
 
-      <!-- ==================== BEKAS PAPARAN KAMERA (MENYOKONG SKRIN PENUH) ==================== -->
+      <!-- BEKAS PAPARAN KAMERA IMBASAN -->
       <div id="kotakImbasanKamera" class="relative bg-black rounded-2xl overflow-hidden shadow-2xl aspect-video md:aspect-[16/9] max-h-[580px] flex items-center justify-center transition-all duration-300">
         <video id="videoImbasan" autoplay muted playsinline class="w-full h-full object-cover"></video>
         <canvas id="canvasImbasan" class="absolute top-0 left-0 w-full h-full pointer-events-none object-cover"></canvas>
         
-        <!-- Status Kamera (Penjuru Kiri Atas) -->
         <div id="statusImbasan" class="absolute top-4 left-4 bg-black/75 backdrop-blur-md text-white text-xs px-3.5 py-1.5 rounded-full font-medium z-30">
           Status: Kamera Dimatikan
         </div>
 
-        <!-- Kawalan Terapung Penjuru Kanan Atas (Tukar Kamera & Skrin Penuh) -->
         <div class="absolute top-4 right-4 flex items-center gap-2 z-30">
-          <button onclick="flipKameraCepat()" title="Tukar Kamera Depan / Belakang" class="bg-black/60 hover:bg-black/85 text-white p-2.5 rounded-full backdrop-blur-md transition shadow-lg border border-white/20">
+          <button onclick="flipKameraCepat()" title="Tukar Kamera Depan / Belakang" class="bg-black/60 hover:bg-black/85 text-white p-2.5 rounded-full backdrop-blur-md transition shadow border border-white/20">
             <svg class="w-5 h-5 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
           </button>
           
-          <button onclick="toggleSkrinPenuh()" title="Skrin Penuh / Skrin Biasa" class="bg-black/60 hover:bg-black/85 text-white p-2.5 rounded-full backdrop-blur-md transition shadow-lg border border-white/20">
-            <svg id="iconFsSvg" class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+          <button onclick="toggleSkrinPenuh()" title="Skrin Penuh / Skrin Biasa" class="bg-black/60 hover:bg-black/85 text-white p-2.5 rounded-full backdrop-blur-md transition shadow border border-white/20">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
           </button>
         </div>
 
-        <!-- Butang Selesai Kamera Terapung Semasa Mod Skrin Penuh (Bawah Skrin) -->
         <div id="barKawalanFsBawah" class="absolute bottom-6 inset-x-0 flex justify-center items-center gap-3 z-30 pointer-events-auto">
           <button id="btnSelesaiFs" onclick="hentiKameraImbasan()" class="bg-rose-600/90 hover:bg-rose-700 text-white font-bold px-6 py-2.5 rounded-full shadow-2xl backdrop-blur-md transition flex items-center gap-2 text-xs md:text-sm hidden">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path></svg>
@@ -282,14 +270,19 @@
           </button>
         </div>
 
-        <!-- ==================== POP-UP TOAST PENGECAMAN (TERAPUNG ATAS KAMERA) ==================== -->
-        <div id="toastAlert" class="absolute top-16 right-4 md:top-20 md:right-6 z-50 transform transition-all duration-300 -translate-y-28 opacity-0 bg-white/95 backdrop-blur-md border-l-4 border-emerald-500 shadow-2xl rounded-2xl p-4 max-w-sm flex items-center gap-3.5 pointer-events-none">
-          <div class="bg-emerald-100 text-emerald-600 rounded-full p-2.5 shrink-0 shadow-inner">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+        <!-- ==================== POP-UP TOAST PENGECAMAN (BESAR & HIJAU TERANG) ==================== -->
+        <div id="toastAlert" class="absolute top-4 left-1/2 -translate-x-1/2 md:top-6 z-50 transform transition-all duration-300 -translate-y-36 opacity-0 bg-emerald-600 text-white shadow-2xl rounded-2xl p-4 md:p-5 max-w-lg w-[94%] flex items-center gap-4 border-2 border-emerald-300 pointer-events-none">
+          <div class="bg-white text-emerald-600 rounded-2xl p-3 shrink-0 shadow-md">
+            <svg class="w-8 h-8 md:w-9 md:h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
           </div>
-          <div class="min-w-0">
-            <p class="font-extrabold text-sm text-slate-800 truncate" id="toastNama">Nama Murid</p>
-            <p class="text-xs font-bold text-emerald-600 mt-0.5" id="toastInfo">Selesai Rekod</p>
+          <div class="min-w-0 flex-1">
+            <p class="font-extrabold text-base md:text-lg text-white truncate tracking-wide" id="toastNama">NAMA MURID</p>
+            <div class="mt-1.5 flex flex-wrap items-center gap-2">
+              <span class="inline-block bg-white text-emerald-800 text-xs md:text-sm font-black px-3.5 py-1 rounded-xl uppercase tracking-wider shadow" id="toastNota">
+                ✓ TELAH DAFTAR MASUK
+              </span>
+              <span class="text-emerald-100 text-xs font-bold" id="toastMasa"></span>
+            </div>
           </div>
         </div>
 
@@ -299,61 +292,85 @@
     <!-- ==================== TAB 2: DAFTAR WAJAH (ADMIN) ==================== -->
     <section id="tab-admin-daftar" class="tab-content hidden">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-base font-bold text-slate-800">Daftar Wajah Murid</h2>
-            <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded">Admin Sah</span>
-          </div>
-          
-          <div class="space-y-4">
-            <div>
-              <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Tapis Mengikut Kelas</label>
-              <select id="filterTingkatan" onchange="kemaskiniPilihanMurid()" class="w-full border rounded-lg p-2.5 bg-slate-50 text-sm font-semibold">
-                <option value="">Semua Kelas</option>
-              </select>
+        
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-base font-bold text-slate-800">Daftar Wajah Murid</h2>
+              <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded">Admin Sah</span>
             </div>
-            <div>
-              <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Pilih Nama Murid</label>
-              <select id="pilihMurid" class="w-full border rounded-lg p-2.5 bg-slate-50 font-medium text-sm">
-                <option value="">-- Sila Pilih Murid --</option>
-              </select>
-            </div>
-
-            <!-- BAHARU: PILIHAN KAMERA DAFTAR WAJAH (DEPAN / BELAKANG) -->
-            <div>
-              <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Pilihan Kamera Daftar</label>
-              <div class="flex gap-2">
-                <select id="pilihanKameraDaftar" onchange="tukarKameraDaftarSemasaBerjalan()" class="flex-1 border rounded-lg p-2.5 bg-slate-50 font-semibold text-slate-700 text-sm focus:ring-2 focus:ring-indigo-400">
-                  <option value="user">Kamera Hadapan (Swafoto)</option>
-                  <option value="environment">Kamera Belakang (Utama)</option>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Tapis Mengikut Kelas</label>
+                <select id="filterTingkatan" onchange="kemaskiniPilihanMurid()" class="w-full border rounded-lg p-2.5 bg-slate-50 text-sm font-semibold">
+                  <option value="">Semua Kelas</option>
                 </select>
-                <button type="button" onclick="flipKameraDaftar()" title="Tukar Kamera Depan / Belakang" class="bg-slate-100 hover:bg-slate-200 border border-slate-300 px-3 py-2.5 rounded-lg text-slate-700 transition flex items-center justify-center">
-                  <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Pilih Nama Murid</label>
+                <select id="pilihMurid" onchange="kemaskiniLabelMuridDaftar()" class="w-full border rounded-lg p-2.5 bg-slate-50 font-medium text-sm">
+                  <option value="">-- Sila Pilih Murid --</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Pilihan Kamera</label>
+                <div class="flex gap-2">
+                  <select id="pilihanKameraDaftar" onchange="tukarKameraDaftarSemasaBerjalan()" class="flex-1 border rounded-lg p-2.5 bg-slate-50 font-semibold text-slate-700 text-sm focus:ring-2 focus:ring-indigo-400">
+                    <option value="user">Kamera Hadapan (Swafoto)</option>
+                    <option value="environment">Kamera Belakang (Utama)</option>
+                  </select>
+                  <button type="button" onclick="flipKameraDaftar()" title="Tukar Kamera Depan / Belakang" class="bg-slate-100 hover:bg-slate-200 border border-slate-300 px-3 py-2.5 rounded-lg text-slate-700 transition flex items-center justify-center">
+                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="pt-2 flex flex-wrap gap-2.5">
+                <button type="button" onclick="mulaKameraDaftar()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-xl text-sm transition shadow-sm">
+                  Buka Kamera
+                </button>
+                <button type="button" id="btnTangkapWajah" onclick="tangkapDanDaftarWajah()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition shadow-sm flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+                  Daftar Wajah Ini
+                </button>
+                <button type="button" onclick="toggleSkrinPenuhDaftar()" class="bg-slate-800 hover:bg-slate-900 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition shadow-sm flex items-center gap-1.5 ml-auto">
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                  <span id="teksSkrinPenuhDaftar">Skrin Penuh</span>
                 </button>
               </div>
+              <p id="msgDaftar" class="text-xs font-semibold text-slate-600 min-h-[22px] mt-1"></p>
             </div>
-
-            <div class="pt-2 flex flex-wrap gap-3">
-              <button onclick="mulaKameraDaftar()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition">
-                Buka Kamera
-              </button>
-              <button onclick="tangkapDanDaftarWajah()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition">
-                Daftar Wajah Ini
-              </button>
-            </div>
-            <p id="msgDaftar" class="text-xs font-semibold text-slate-600 min-h-[20px]"></p>
           </div>
         </div>
 
-        <div class="relative bg-black rounded-2xl overflow-hidden aspect-video flex items-center justify-center border border-slate-300">
+        <div id="kotakKameraDaftar" class="relative bg-black rounded-2xl overflow-hidden aspect-video flex items-center justify-center border border-slate-300 shadow-lg transition-all duration-300">
           <video id="videoDaftar" autoplay muted playsinline class="w-full h-full object-cover"></video>
           <canvas id="canvasDaftar" class="absolute top-0 left-0 w-full h-full pointer-events-none object-cover"></canvas>
           
-          <!-- Butang Terapung Flip Kamera Daftar -->
-          <button onclick="flipKameraDaftar()" title="Pusing Kamera Depan / Belakang" class="absolute top-3 right-3 bg-black/60 hover:bg-black/85 text-white p-2.5 rounded-full backdrop-blur-md transition shadow border border-white/20">
-            <svg class="w-5 h-5 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-          </button>
+          <div id="bannerNamaDaftarFs" class="absolute top-4 left-4 bg-black/75 backdrop-blur-md text-white text-xs px-3.5 py-1.5 rounded-full font-medium z-30 flex items-center gap-1.5">
+            <span class="text-slate-300">Murid:</span>
+            <span id="labelMuridSemasaDaftar" class="font-bold text-amber-300 truncate max-w-[200px]">Belum Dipilih</span>
+          </div>
+
+          <div class="absolute top-4 right-4 flex items-center gap-2 z-30">
+            <button type="button" onclick="flipKameraDaftar()" title="Tukar Kamera Depan / Belakang" class="bg-black/60 hover:bg-black/85 text-white p-2.5 rounded-full backdrop-blur-md transition shadow border border-white/20">
+              <svg class="w-5 h-5 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
+            <button type="button" onclick="toggleSkrinPenuhDaftar()" title="Skrin Penuh Kamera Daftar" class="bg-black/60 hover:bg-black/85 text-white p-2.5 rounded-full backdrop-blur-md transition shadow border border-white/20">
+              <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+            </button>
+          </div>
+
+          <div id="barKawalanDaftarFs" class="absolute bottom-6 inset-x-0 flex justify-center items-center gap-3 z-30 pointer-events-auto">
+            <button type="button" onclick="tangkapDanDaftarWajah()" class="bg-emerald-600/90 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-full shadow-2xl backdrop-blur-md transition flex items-center gap-2 text-xs md:text-sm border border-emerald-400/40">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+              Ambil Gambar & Daftar Wajah
+            </button>
+          </div>
         </div>
+
       </div>
     </section>
 
@@ -521,7 +538,7 @@
         </div>
       </div>
 
-      <!-- ==================== BAHAGIAN: STATISTIK KEHADIRAN MENGIKUT KELAS ==================== -->
+      <!-- BAHAGIAN: STATISTIK KEHADIRAN MENGIKUT KELAS -->
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4 border-b pb-3">
           <div>
@@ -637,6 +654,7 @@
     let senaraiPukalPratonton = [];
     let muridDipilihUntukAktiviti = new Set();
     let muridTelahHadirAktivitiSemasa = new Set();
+    let muridTelahDaftarMasukHariIni = new Set(); // Mengingati murid yang telah hadir hari ini
     let aktivitiSemasaDipilih = null;
 
     let senaraiMuridTidakHadirMaster = [];
@@ -646,11 +664,12 @@
 
     let faceMatcher = null;
     let streamSemasa = null;
-    let streamDaftar = null; // Stream khusus untuk pendaftaran wajah
+    let streamDaftar = null;
     let scanTimer = null;
     let cooldownScan = new Map();
     let tabSasaranAdmin = null;
     let adminDisahkan = false;
+    let sedangDaftarWajah = false; // Kunci Single-Shot
 
     // ==================== ENJIN AUDIO (WEB AUDIO SYNTHESIZER) ====================
     let audioCtx = null;
@@ -664,7 +683,6 @@
       return audioCtx;
     }
 
-    // 1. Bunyi Pendaftaran Wajah Kali Pertama (Chime Nada Harmoni Naik: C5 -> E5 -> G5)
     function mainBunyiDaftar() {
       try {
         const ctx = getAudioContext();
@@ -686,7 +704,6 @@
       }
     }
 
-    // 2. Bunyi Pengecaman Kehadiran Berjaya (Ding-Dong: E5 -> A5)
     function mainBunyiHadir() {
       try {
         const ctx = getAudioContext();
@@ -820,6 +837,11 @@
         document.getElementById('dashMasih').innerText = d.masihDiSekolah;
 
         document.getElementById('labelKiraanTidakHadir').innerText = d.jumlahTidakHadir + " Orang";
+
+        // Segerakkan senarai murid yang sudah hadir
+        if (d.senaraiMasihDiSekolah) {
+          d.senaraiMasihDiSekolah.forEach(m => muridTelahDaftarMasukHariIni.add(m.nama));
+        }
 
         paparkanStatistikKelas(d.pecahanKelas || []);
 
@@ -1088,6 +1110,7 @@
         const data = await res.json();
         if (data.success) {
           mainBunyiHadir();
+          muridTelahDaftarMasukHariIni.add(muridSusulanSemasa.nama);
           tutupModalSusulan();
           await muatTurunDashboard();
           alert(`Kehadiran bagi ${data.nama} berjaya direkodkan sebagai [${data.status}] pada jam ${data.masa}.`);
@@ -1306,7 +1329,7 @@
       }
     }
 
-    // ==================== OPERASI KAMERA PUKAL & SKRIN PENUH ====================
+    // ==================== OPERASI KAMERA PUKAL & PENGECAMAN DENGAN NOTA HIJAU ====================
     function selaraskanDimensiImbasan() {
       const video = document.getElementById('videoImbasan');
       const canvas = document.getElementById('canvasImbasan');
@@ -1350,19 +1373,51 @@
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            const jenisMod = document.getElementById('pilihanJenis').value;
+
             resized.forEach(d => {
               const padanan = faceMatcher.findBestMatch(d.descriptor);
               const kotak = d.detection.box;
 
               if (padanan.label !== 'unknown') {
                 const [nama, tingkatan] = padanan.label.split(' | ');
-                new faceapi.draw.DrawBox(kotak, {
-                  label: `${nama} (${tingkatan})`,
-                  boxColor: '#10b981'
-                }).draw(canvas);
+
+                // 1. Lukis kotak sempadan hijau terang sekeliling muka
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#10b981';
+                ctx.strokeRect(kotak.x, kotak.y, kotak.width, kotak.height);
+
+                // 2. Lukis Lencana Hijau Gelap Bersepadu di Atas Kotak Wajah
+                const teksNota = (jenisMod === 'Keluar') ? 'TELAH DAFTAR KELUAR' : 'TELAH DAFTAR MASUK';
+                const labelNama = `${nama} (${tingkatan})`;
+                const badgeW = Math.max(kotak.width + 10, 240);
+                const badgeH = 50;
+                const badgeY = Math.max(4, kotak.y - badgeH - 6);
+
+                ctx.fillStyle = 'rgba(6, 78, 59, 0.92)'; // Emerald gelap kontras
+                ctx.beginPath();
+                if (ctx.roundRect) {
+                  ctx.roundRect(kotak.x, badgeY, badgeW, badgeH, 10);
+                } else {
+                  ctx.rect(kotak.x, badgeY, badgeW, badgeH);
+                }
+                ctx.fill();
+
+                // 3. Tulis Nama Murid (Putih Bold)
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 14px sans-serif';
+                ctx.fillText(labelNama, kotak.x + 10, badgeY + 20);
+
+                // 4. NOTA BESAR BERWARNA HIJAU TERANG (PENEGASAN JELAS KEPADA PENGGUNA)
+                ctx.fillStyle = '#34d399'; // Emerald-400 Hijau Terang
+                ctx.font = '900 15px sans-serif';
+                ctx.fillText(`✓ ${teksNota}`, kotak.x + 10, badgeY + 41);
 
                 hantarKehadiran(nama, tingkatan);
               } else {
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#ef4444';
+                ctx.strokeRect(kotak.x, kotak.y, kotak.width, kotak.height);
                 new faceapi.draw.DrawBox(kotak, {
                   label: 'Tidak Dikenali',
                   boxColor: '#ef4444'
@@ -1376,7 +1431,6 @@
       }
     }
 
-    // Tukar Kamera Semasa Imbasan Berjalan
     async function tukarKameraSemasaBerjalan() {
       const sedangAktif = !document.getElementById('btnSelesaiKamera').classList.contains('hidden');
       if (!sedangAktif) return;
@@ -1409,7 +1463,6 @@
       tukarKameraSemasaBerjalan();
     }
 
-    // FUNGSI MOD SKRIN PENUH (FULLSCREEN TOGGLE)
     function toggleSkrinPenuh() {
       const container = document.getElementById('kotakImbasanKamera');
       const btnText = document.getElementById('teksSkrinPenuh');
@@ -1483,7 +1536,8 @@
         document.getElementById('kiraanHadirAktivitiLabel').innerText = muridTelahHadirAktivitiSemasa.size;
       }
 
-      tunjukToast(nama, `Merekodkan ${jenis}...`);
+      // Dialog pop-up besar dengan nota hijau serta-merta
+      tunjukToast(nama, "Sedang Merekodkan...", jenis);
 
       try {
         const res = await fetch(GAS_API_URL, {
@@ -1500,27 +1554,48 @@
         });
         const d = await res.json();
         mainBunyiHadir();
-        tunjukToast(nama, `Selesai Rekod (${d.masa} - ${d.status})`);
+        muridTelahDaftarMasukHariIni.add(nama);
+        tunjukToast(nama, `Jam ${d.masa} (${d.status})`, jenis);
       } catch (e) {
         console.error("Ralat rekod kehadiran:", e);
       }
     }
 
-    function tunjukToast(nama, info) {
+    function tunjukToast(nama, info, jenis = "Masuk") {
       const toast = document.getElementById('toastAlert');
       document.getElementById('toastNama').innerText = nama;
-      document.getElementById('toastInfo').innerText = info;
-      toast.classList.remove('-translate-y-28', 'opacity-0');
+      const notaEl = document.getElementById('toastNota');
+
+      if (jenis === "Keluar") {
+        notaEl.innerText = "✓ TELAH DAFTAR KELUAR";
+        notaEl.className = "inline-block bg-white text-purple-800 text-xs md:text-sm font-black px-3.5 py-1 rounded-xl uppercase tracking-wider shadow";
+      } else {
+        notaEl.innerText = "✓ TELAH DAFTAR MASUK";
+        notaEl.className = "inline-block bg-white text-emerald-800 text-xs md:text-sm font-black px-3.5 py-1 rounded-xl uppercase tracking-wider shadow";
+      }
+
+      document.getElementById('toastMasa').innerText = info;
+      toast.classList.remove('-translate-y-36', 'opacity-0');
       setTimeout(() => {
-        toast.classList.add('-translate-y-28', 'opacity-0');
-      }, 4000);
+        toast.classList.add('-translate-y-36', 'opacity-0');
+      }, 4500);
     }
 
     function setMsgImbasan(txt) {
       document.getElementById('statusImbasan').innerText = txt;
     }
 
-    // ==================== OPERASI PENDAFTARAN WAJAH (DENGAN TUKAR KAMERA) ====================
+    // ==================== DAFTAR WAJAH: OPERASI & SKRIN PENUH ====================
+    function selaraskanDimensiDaftar() {
+      const video = document.getElementById('videoDaftar');
+      const canvas = document.getElementById('canvasDaftar');
+      if (video && video.videoWidth) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        faceapi.matchDimensions(canvas, { width: video.videoWidth, height: video.videoHeight });
+      }
+    }
+
     async function muatTurunDataMurid() {
       try {
         const res = await fetch(`${GAS_API_URL}?action=getMurid`);
@@ -1562,9 +1637,20 @@
           const tanda = m.descriptor ? '✓ (Ada Wajah)' : '✗ (Belum)';
           sel.innerHTML += `<option value="${m.nama}|${m.tingkatan}">[${tanda}] ${m.nama} (${m.tingkatan})</option>`;
         });
+      kemaskiniLabelMuridDaftar();
     }
 
-    // BUKA KAMERA DAFTAR WAJAH
+    function kemaskiniLabelMuridDaftar() {
+      const val = document.getElementById('pilihMurid').value;
+      const label = document.getElementById('labelMuridSemasaDaftar');
+      if (val) {
+        const [nama, tingkatan] = val.split('|');
+        label.innerText = `${nama} (${tingkatan})`;
+      } else {
+        label.innerText = "Belum Dipilih";
+      }
+    }
+
     async function mulaKameraDaftar() {
       const facing = document.getElementById('pilihanKameraDaftar').value;
       const video = document.getElementById('videoDaftar');
@@ -1580,13 +1666,15 @@
         });
         video.srcObject = streamDaftar;
         msg.innerText = `Kamera aktif (${facing === 'user' ? 'Hadapan' : 'Belakang'}). Sila halakan ke wajah murid.`;
+        video.onloadedmetadata = () => {
+          selaraskanDimensiDaftar();
+        };
       } catch (err) {
         msg.innerText = "Ralat kamera: " + err.message;
         alert("Gagal membuka kamera: " + err.message);
       }
     }
 
-    // TUKAR KAMERA DAFTAR SEMASA BERJALAN
     async function tukarKameraDaftarSemasaBerjalan() {
       const video = document.getElementById('videoDaftar');
       if (streamDaftar || (video.srcObject && video.srcObject.active)) {
@@ -1597,33 +1685,91 @@
     function flipKameraDaftar() {
       const sel = document.getElementById('pilihanKameraDaftar');
       sel.value = (sel.value === 'user') ? 'environment' : 'user';
-      mulaKameraDaftar();
+      tukarKameraDaftarSemasaBerjalan();
+    }
+
+    function toggleSkrinPenuhDaftar() {
+      const container = document.getElementById('kotakKameraDaftar');
+      const btnText = document.getElementById('teksSkrinPenuhDaftar');
+      const isFs = document.fullscreenElement || document.webkitFullscreenElement || container.classList.contains('custom-fullscreen');
+
+      if (!isFs) {
+        container.classList.add('custom-fullscreen');
+        if (container.requestFullscreen) {
+          container.requestFullscreen().catch(() => {});
+        } else if (container.webkitRequestFullscreen) {
+          container.webkitRequestFullscreen();
+        }
+        if (btnText) btnText.innerText = "Keluar Skrin";
+      } else {
+        container.classList.remove('custom-fullscreen');
+        if (document.exitFullscreen && document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen && document.webkitFullscreenElement) {
+          document.webkitExitFullscreen();
+        }
+        if (btnText) btnText.innerText = "Skrin Penuh";
+      }
+
+      setTimeout(() => {
+        selaraskanDimensiDaftar();
+      }, 350);
     }
 
     async function tangkapDanDaftarWajah() {
+      if (sedangDaftarWajah) return;
+
       const val = document.getElementById('pilihMurid').value;
       const msg = document.getElementById('msgDaftar');
+      const btn = document.getElementById('btnTangkapWajah');
+
       if (!val) {
-        alert("Sila pilih murid terlebih dahulu.");
+        alert("Sila pilih murid dari senarai terlebih dahulu sebelum mengambil gambar.");
         return;
       }
 
       const [nama, tingkatan] = val.split('|');
       const video = document.getElementById('videoDaftar');
 
-      msg.innerText = "Mengesan wajah...";
-      const detection = await faceapi.detectSingleFace(video)
-        .withFaceLandmarks()
-        .withFaceDescriptor();
-
-      if (!detection) {
-        msg.innerText = "Wajah tidak dikesan dengan jelas. Sila pandang tepat ke kamera.";
+      if (!video.srcObject || !video.srcObject.active) {
+        alert("Sila tekan butang 'Buka Kamera' terlebih dahulu.");
         return;
       }
 
-      tunjukLoading("Menyimpan Wajah Murid", `Sedang memproses dan menyimpan data wajah ${nama} ke Google Sheets. Sila tunggu sebentar...`);
+      sedangDaftarWajah = true;
+      btn.disabled = true;
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+      tunjukLoading("Mengambil & Mengimbas Wajah", `Gambar wajah ${nama} telah diambil. Sila bertenang, AI sedang menganalisis ciri wajah dan menyimpan ke pangkalan data Google Sheets...`);
+      msg.innerText = "Sedang mengimbas titik wajah murid...";
 
       try {
+        const detection = await faceapi.detectSingleFace(video)
+          .withFaceLandmarks()
+          .withFaceDescriptor();
+
+        if (!detection) {
+          tutupLoading();
+          sedangDaftarWajah = false;
+          btn.disabled = false;
+          btn.classList.remove('opacity-50', 'cursor-not-allowed');
+          msg.innerText = "Wajah tidak dikesan dengan jelas. Sila pandang tepat ke arah kamera dan cuba lagi.";
+          alert("Wajah tidak dikesan dengan jelas. Pastikan pencahayaan terang dan wajah menghadap terus ke kamera.");
+          return;
+        }
+
+        const canvas = document.getElementById('canvasDaftar');
+        selaraskanDimensiDaftar();
+        const resized = faceapi.resizeResults(detection, { width: video.videoWidth, height: video.videoHeight });
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        new faceapi.draw.DrawBox(resized.box, {
+          label: `${nama} (Dikesan)`,
+          boxColor: '#10b981'
+        }).draw(canvas);
+
+        tunjukLoading("Menyimpan ke Google Sheets", `Wajah ${nama} dikesan! Sedang merekodkan ke tab Murid di Google Sheets...`);
+
         const res = await fetch(GAS_API_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -1638,17 +1784,30 @@
         const d = await res.json();
         if (d.success) {
           mainBunyiDaftar();
-          msg.innerText = `Berjaya! Wajah bagi ${nama} (${tingkatan}) telah disimpan.`;
+          msg.innerHTML = `<span class="text-emerald-600 font-bold">✓ Selesai! Wajah bagi ${nama} (${tingkatan}) telah disimpan.</span>`;
           await muatTurunDataMurid();
           binaPengecamWajah();
+          tutupLoading();
+
+          const container = document.getElementById('kotakKameraDaftar');
+          if (container.classList.contains('custom-fullscreen')) {
+            toggleSkrinPenuhDaftar();
+          }
+
           alert(`Wajah bagi ${nama} (${tingkatan}) telah berjaya didaftarkan ke pangkalan data!`);
         } else {
+          tutupLoading();
           msg.innerText = "Ralat simpanan: " + (d.error || d.message);
+          alert("Ralat semasa menyimpan ke Google Sheets: " + (d.error || d.message));
         }
       } catch (err) {
-        msg.innerText = "Ralat sambungan: " + err.message;
-      } finally {
         tutupLoading();
+        msg.innerText = "Ralat sambungan: " + err.message;
+        alert("Ralat sambungan: " + err.message);
+      } finally {
+        sedangDaftarWajah = false;
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
       }
     }
 
