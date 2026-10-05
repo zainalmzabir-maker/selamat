@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Kehadiran Pengecaman Wajah</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Engine AI Face-api.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col font-sans">
+
+  <!-- ==================== HEADER & NAVIGASI ==================== -->
+  <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap justify-between items-center gap-3">
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></div>
+        <h1 class="text-lg md:text-xl font-bold tracking-wide">Pengecaman Wajah Sekolah</h1>
+      </div>
+      <nav class="flex flex-wrap gap-1.5 md:gap-2">
+        <button onclick="bukaTab('rekod')" id="nav-rekod" class="tab-btn px-3 py-1.5 text-xs md:text-sm rounded-lg bg-indigo-800 font-semibold transition">Rekod Hadir</button>
+        <button onclick="bukaTab('admin-daftar')" id="nav-admin-daftar" class="tab-btn px-3 py-1.5 text-xs md:text-sm rounded-lg hover:bg-indigo-600 font-medium transition">Daftar Wajah</button>
+        <button onclick="bukaTab('admin-aktiviti')" id="nav-admin-aktiviti" class="tab-btn px-3 py-1.5 text-xs md:text-sm rounded-lg hover:bg-indigo-600 font-medium transition">Aktiviti</button>
+        <button onclick="bukaTab('dashboard')" id="nav-dashboard" class="tab-btn px-3 py-1.5 text-xs md:text-sm rounded-lg hover:bg-indigo-600 font-medium transition">Dashboard</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ==================== DIALOG TOAST (PENGECAMAN BERJAYA) ==================== -->
+  <div id="toastAlert" class="fixed top-20 right-4 z-50 transform transition-all duration-300 -translate-y-20 opacity-0 bg-white border-l-4 border-emerald-500 shadow-2xl rounded-xl p-4 max-w-sm flex items-center gap-3 pointer-events-none">
+    <div class="bg-emerald-100 text-emerald-600 rounded-full p-2">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    </div>
+    <div>
+      <p class="font-bold text-sm text-slate-800" id="toastNama">Nama Murid</p>
+      <p class="text-xs font-semibold text-emerald-600" id="toastInfo">Selesai Rekod</p>
+    </div>
+  </div>
+
+  <!-- ==================== KANDUNGAN UTAMA ==================== -->
+  <main class="max-w-6xl mx-auto p-4 flex-grow w-full">
+
+    <!-- ==================== TAB 1: REKOD HADIR (PENGECAMAN PUKAL) ==================== -->
+    <section id="tab-rekod" class="tab-content">
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-5">
+        <h2 class="text-base font-bold text-slate-700 mb-3 flex items-center gap-2">
+          <span>Konfigurasi Sesi Imbasan</span>
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- Mod Masuk / Keluar -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Arah Imbasan</label>
+            <select id="arahImbasan" class="w-full border rounded-lg px-3 py-2 bg-slate-50 font-medium focus:ring-2 focus:ring-indigo-400">
+              <option value="Masuk">MASUK (Check-In)</option>
+              <option value="Keluar">KELUAR (Check-Out)</option>
+            </select>
+          </div>
+
+          <!-- Kategori -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Kategori Rekod</label>
+            <select id="kategoriSesi" onchange="tukarKategori()" class="w-full border rounded-lg px-3 py-2 bg-slate-50 font-medium focus:ring-2 focus:ring-indigo-400">
+              <option value="Persekolahan">Sesi Persekolahan Harian</option>
+              <option value="Aktiviti">Aktiviti Lain / Kokurikulum</option>
+            </select>
+          </div>
+
+          <!-- Dropdown Aktiviti 30 Minit -->
+          <div id="kotakAktiviti" class="hidden">
+            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Pilihan Aktiviti (Aktif -30 Minit)</label>
+            <select id="selectAktivitiAktif" class="w-full border rounded-lg px-3 py-2 bg-amber-50 border-amber-300 font-medium focus:ring-2 focus:ring-indigo-400">
+              <option value="">-- Menunggu Aktiviti Dibuka --</option>
+            </select>
+          </div>
+
+          <!-- Pilihan Kamera Depan / Belakang -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Pilihan Kamera</label>
+            <select id="pilihanKamera" class="w-full border rounded-lg px-3 py-2 bg-slate-50 font-medium focus:ring-2 focus:ring-indigo-400">
+              <option value="user">Kamera Hadapan</option>
+              <option value="environment">Kamera Belakang</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Butang Mula & Selesai Kamera -->
+        <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-3">
+          <button id="btnMulaKamera" onclick="mulaKameraImbasan()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm transition flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="roundBerikut adalah kemas kini lengkap untuk kedua-dua bahagian sistem anda: **Google Apps Script (`Code.gs`)** dan **Antaramuka Web (`index.html`)** yang telah diselaraskan dengan URL Web App Script dan pangkalan data Google Sheets (**DATABASE SELAMAT SEMEKAR**).
+
+Sistem ini merangkumi modul lengkap:
+1. **Pendaftaran Masuk & Keluar individu** (merekodkan status hadir, tepat masa/lambat, serta waktu keluar).
+2. **Pengesanan murid yang masih berada di sekolah** secara langsung pada Dashboard.
+3. **Pengecaman wajah pukal** dengan pilihan kamera hadapan atau belakang.
+4. **Penyelarasan aktiviti 30 minit sebelum bermula**.
+
+---
+
+### Bahagian 1: Kod Google Apps Script (`Code.gs`)
+
+Buka helaian Google Sheets anda, klik pada menu **Extensions > Apps Script**, gantikan keseluruhan kod dalam `Code.gs` dengan kod di bawah, kemudian klik **Save** dan **Deploy > Manage Deployments > Edit > Version Baru > Deploy**.
+
+```javascript
+/**
+ * SISTEM KEHADIRAN & KELUAR MASUK SEKOLAH
+ * Pangkalan Data: Google Sheets
+ */
+
+// Menyambung secara automatik ke lembaran kerja aktif
+const SPREADSHEET = SpreadsheetApp.getActiveSpreadsheet();
+
+// Fungsi GET untuk membaca data
+function doGet(e) {
+  const action = e.parameter ? e.parameter.action : "";
+
+  // 1. Dapatkan Senarai Murid
+  if (action === "getMurid") {
+    const sheet = SPREADSHEET.getSheetByName("Murid");
+    const data = sheet.getDataRange().getValues();
+    data.shift(); // Buang baris pengepala
+
+    const senarai = data.map(r => ({
+      nama: String(r[0] || "").trim(),
+      tingkatan: String(r[1] || "").trim(),
+      descriptor: r[2] ? JSON.parse(r[2]) : null
+    })).filter(m => m.nama !== "");
+
+    return responJSON(senarai);
+  }
+
+  // 2. Dapatkan Jadual Aktiviti
+  if (action === "getAktiviti") {
+    const sheet = SPREADSHEET.getSheetByName("Aktiviti");
+    const data = sheet.getDataRange().getValues();
+    data.shift();
+
+    const senarai = data.map(r => {
+      let tStr = r[2];
+      if (r[2] instanceof Date) {
+        tStr = Utilities.formatDate(r[2], "Asia/Kuala_Lumpur", "yyyy-MM-dd");
+      }
+      return {
+        id: r[0],
+        nama: r[1],
+        tarikh: tStr,
+        masaMula: r[3],
+        masaTamat: r[4],
+        sasaran: r[5]
+      };
+    });
+
+    return responJSON(senarai);
+  }
+
+  // 3. Data Statistik Dashboard
+  if (action === "getDashboard") {
+    return responJSON(janaStatistikDashboard());
+  }
+
+  return responJSON({ status: "Sistem aktif dan bersedia" });
+}
+
+// Fungsi POST untuk menyimpan data
+function doPost(e) {
+  try {
+    const payload = JSON.parse(e.postData.contents);
+    const action = payload.action;
+
+    // A. Simpan Deskriptor Wajah Murid
+    if (action === "daftarWajah") {
+      const sheet = SPREADSHEET.getSheetByName("Murid");
+      const data = sheet.getDataRange().getValues();
+      let dijumpai = false;
+
+      for (let i = 1; i < data.length; i++) {
+        if (data[i][0] === payload.nama && data[i][1] === payload.tingkatan) {
+          sheet.getRange(i + 1, 3).setValue(JSON.stringify(payload.descriptor));
+          dijumpai = true;
+          break;
+        }
+      }
+
+      if (!dijumpai) {
+        // Jika belum ada dalam rekod, tambah baris baharu
+        sheet.appendRow([payload.nama, payload.tingkatan, JSON.stringify(payload.descriptor)]);
+      }
+
+      return responJSON({ success: true, message: "Wajah berjaya disimpan ke pangkalan data." });
+    }
+
+    // B. Rekod Kehadiran / Pergerakan Masuk & Keluar
+    if (action === "rekodKehadiran") {
+      const sheet = SPREADSHEET.getSheetByName("Kehadiran");
+      const zonMasa = "Asia/Kuala_Lumpur";
+      const now = new Date();
+      const tarikh = Utilities.formatDate(now, zonMasa, "yyyy-MM-dd");
+      const masa = Utilities.formatDate(now, zonMasa, "HH:mm:ss");
+
+      const kategori = payload.kategori || "Persekolahan";
+      const jenis = payload.jenis || "Masuk"; // "Masuk" atau "Keluar"
+      let statusCatatan = jenis;
+
+      if (kategori === "Persekolahan") {
+        if (jenis === "Masuk") {
+          const jam = now.getHours();
+          const minit = now.getMinutes();
+          // Penetapan masa lewat: Selepas 7:30 pagi
+          if (jam > 7 || (jam === 7 && minit > 30)) {
+            statusCatatan = "Masuk (Lambat)";
+          } else {
+            statusCatatan = "Masuk (Tepat Masa)";
+          }
+        } else {
+          statusCatatan = "Keluar";
+        }
+      } else {
+        statusCat
