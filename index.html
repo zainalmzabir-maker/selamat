@@ -190,6 +190,10 @@
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
           Admin
         </button>
+        <!-- Butang Log Keluar Pantas Admin (Hanya muncul jika admin aktif) -->
+        <button id="btnKunciAdminSesi" onclick="kunciSemulaAdmin()" class="hidden px-2.5 py-1 text-xs bg-rose-600 hover:bg-rose-700 rounded-lg text-white font-bold transition ml-1">
+          Kunci Sesi
+        </button>
       </nav>
     </div>
   </header>
@@ -840,9 +844,56 @@
     }
     function tutupLoading() { document.getElementById('modalLoading').classList.add('hidden'); }
 
-    // INISIALISASI PANTAS
+    // ==================== PENGURUSAN SESI KATA LALUAN PERSISTEN (8 JAM) ====================
+    function semakSesiSediaAda() {
+      const expAdmin = localStorage.getItem('adminAuthExp');
+      if (expAdmin && Date.now() < parseInt(expAdmin, 10)) {
+        adminDisahkan = true;
+        const btnKunci = document.getElementById('btnKunciAdminSesi');
+        if (btnKunci) btnKunci.classList.remove('hidden');
+      } else {
+        adminDisahkan = false;
+        localStorage.removeItem('adminAuthExp');
+        const btnKunci = document.getElementById('btnKunciAdminSesi');
+        if (btnKunci) btnKunci.classList.add('hidden');
+      }
+
+      const expAktiviti = localStorage.getItem('aktivitiAuthExp');
+      if (expAktiviti && Date.now() < parseInt(expAktiviti, 10)) {
+        aktivitiDisahkan = true;
+      } else {
+        aktivitiDisahkan = false;
+        localStorage.removeItem('aktivitiAuthExp');
+      }
+    }
+
+    function tetapkanSesiAdmin() {
+      adminDisahkan = true;
+      localStorage.setItem('adminAuthExp', Date.now() + (8 * 60 * 60 * 1000));
+      const btnKunci = document.getElementById('btnKunciAdminSesi');
+      if (btnKunci) btnKunci.classList.remove('hidden');
+    }
+
+    function tetapkanSesiAktiviti() {
+      aktivitiDisahkan = true;
+      localStorage.setItem('aktivitiAuthExp', Date.now() + (8 * 60 * 60 * 1000));
+    }
+
+    function kunciSemulaAdmin() {
+      adminDisahkan = false;
+      aktivitiDisahkan = false;
+      localStorage.removeItem('adminAuthExp');
+      localStorage.removeItem('aktivitiAuthExp');
+      const btnKunci = document.getElementById('btnKunciAdminSesi');
+      if (btnKunci) btnKunci.classList.add('hidden');
+      navigasi('rekod');
+      alert("Sesi Pentadbir telah dikunci semula.");
+    }
+
+    // INISIALISASI
     window.addEventListener('DOMContentLoaded', () => {
       setMasaSekarangManual();
+      semakSesiSediaAda();
       mulakanLatarBelakangSenyap();
     });
 
@@ -887,9 +938,10 @@
       }
     }
 
-    // KAWALAN KATA LALUAN
     function navigasiDenganKunci(jenis) {
       modKunciSasaran = jenis;
+      semakSesiSediaAda();
+
       if (jenis === 'admin' && adminDisahkan) { navigasi('admin'); return; }
       if (jenis === 'aktiviti' && aktivitiDisahkan) { navigasi('aktiviti'); return; }
 
@@ -904,11 +956,11 @@
     function sahkanKataLaluan() {
       const val = document.getElementById('inputKataLaluan').value;
       if (modKunciSasaran === 'admin' && val === KATA_LALUAN_ADMIN) {
-        adminDisahkan = true;
+        tetapkanSesiAdmin();
         tutupModalKunci();
         navigasi('admin');
       } else if (modKunciSasaran === 'aktiviti' && val === KATA_LALUAN_AKTIVITI) {
-        aktivitiDisahkan = true;
+        tetapkanSesiAktiviti();
         tutupModalKunci();
         navigasi('aktiviti');
       } else {
@@ -1674,9 +1726,9 @@
       document.getElementById('subAdmin-galeri').classList.toggle('hidden', sub !== 'galeri');
       document.getElementById('subAdmin-import').classList.toggle('hidden', sub !== 'import');
 
-      document.getElementById('btnSubAdminDaftar').className = (sub === 'daftar') ? "flex-1 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 text-white" : "flex-1 py-1.5 text-xs font-bold rounded-xl text-slate-600";
-      document.getElementById('btnSubAdminGaleri').className = (sub === 'galeri') ? "flex-1 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 text-white" : "flex-1 py-1.5 text-xs font-bold rounded-xl text-slate-600";
-      document.getElementById('btnSubAdminImport').className = (sub === 'import') ? "flex-1 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 text-white" : "flex-1 py-1.5 text-xs font-bold rounded-xl text-slate-600";
+      document.getElementById('btnSubAdminDaftar').className = (sub === 'daftar') ? "flex-1 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 text-white transition" : "flex-1 py-1.5 text-xs font-bold rounded-xl text-slate-600 transition";
+      document.getElementById('btnSubAdminGaleri').className = (sub === 'galeri') ? "flex-1 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 text-white transition" : "flex-1 py-1.5 text-xs font-bold rounded-xl text-slate-600 transition";
+      document.getElementById('btnSubAdminImport').className = (sub === 'import') ? "flex-1 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 text-white transition" : "flex-1 py-1.5 text-xs font-bold rounded-xl text-slate-600 transition";
 
       if (sub === 'galeri') paparkanGaleriMuridAdmin();
       if (sub !== 'daftar') hentiKameraDaftar();
@@ -1733,7 +1785,7 @@
                 </button>
               `}
               <button onclick="padamMuridAdmin('${m.nama.replace(/'/g, "\\'")}', '${m.tingkatan}')" class="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-bold transition">
-                Padam
+                Padam Murid
               </button>
             </td>
           </tr>
@@ -1833,11 +1885,16 @@
         senaraiMurid = await res.json();
         const kelasSet = [...new Set(senaraiMurid.map(m => m.tingkatan))].filter(Boolean).sort();
 
+        // Kekalkan pilihan kelas sedia ada pada dropdown
         ['filterTingkatan', 'manualFilterKelas', 'statIndividuFilterKelas', 'galeriFilterKelas'].forEach(id => {
           const el = document.getElementById(id);
           if (el) {
+            const prevVal = el.value;
             el.innerHTML = '<option value="">Semua Kelas</option>';
             kelasSet.forEach(k => el.innerHTML += `<option value="${k}">${k}</option>`);
+            if (prevVal && kelasSet.includes(prevVal)) {
+              el.value = prevVal;
+            }
           }
         });
         kemaskiniPilihanMurid();
@@ -1874,6 +1931,8 @@
         const tanda = (m.descriptor) ? '✓' : '✗';
         sel.innerHTML += `<option value="${m.nama}|${m.tingkatan}">[${tanda}] ${m.nama} (${m.tingkatan})</option>`;
       });
+      sel.value = "";
+      kemaskiniLabelMuridDaftar();
     }
 
     function kemaskiniLabelMuridDaftar() {
@@ -1887,6 +1946,8 @@
         } else {
           statusBio.innerText = `Sedia mendaftar wajah 3-sudut bagi ${nama} (${tingkatan}).`;
         }
+      } else {
+        statusBio.innerText = "Sila pilih murid untuk memulakan pendaftaran wajah.";
       }
     }
 
@@ -1980,6 +2041,9 @@
       const collectedDescriptors = [];
       let snapshotGambar = "";
 
+      // Rekod pilihan kelas semasa agar kekal selepas pendaftaran murid
+      const kelasPilihanSemasa = document.getElementById('filterTingkatan').value;
+
       try {
         // Langkah 1: Depan
         stepBadge.innerText = "LANGKAH 1 DARI 3";
@@ -2005,7 +2069,7 @@
         // Langkah 2: Kiri
         stepBadge.innerText = "LANGKAH 2 DARI 3";
         feedback.innerText = "Pusing Wajah Sedikit ke KIRI ⬅️";
-        ikonArah.innerText = "⬅️️";
+        ikonArah.innerText = "⬅️";
 
         let descKiri = await tungguDanTangkapSudut('kiri', "Pusing Wajah Sedikit ke KIRI ⬅️");
         collectedDescriptors.push(descKiri.descriptor);
@@ -2024,9 +2088,9 @@
         // Langkah 3: Kanan
         stepBadge.innerText = "LANGKAH 3 DARI 3";
         feedback.innerText = "Pusing Wajah Sedikit ke KANAN ➡️";
-        ikonArah.innerText = "➡️️";
+        ikonArah.innerText = "➡️";
 
-        let descKanan = await tungguDanTangkapSudut('kanan', "Pusing Wajah Sedikit ke KANAN ➡️");
+        let descKanan = await tungguDanTangkapSudut('kanan', "Pusing Wajah Sedikit ke KANAN ➡️️");
         collectedDescriptors.push(descKanan.descriptor);
 
         mainBunyiSudutSelesai();
@@ -2055,7 +2119,16 @@
         });
 
         alert(`Hebat! Pendaftaran biometrik 3-sudut bagi ${nama} berjaya direkodkan.`);
+        
+        // Muat turun data baharu & kekalkan pilihan kelas
         await muatTurunDataMurid();
+        if (kelasPilihanSemasa) {
+          document.getElementById('filterTingkatan').value = kelasPilihanSemasa;
+          kemaskiniPilihanMurid();
+        }
+        document.getElementById('pilihMurid').value = "";
+        kemaskiniLabelMuridDaftar();
+
         binaPengecamWajah();
         paparkanGaleriMuridAdmin();
 
