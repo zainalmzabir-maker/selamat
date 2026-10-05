@@ -417,7 +417,7 @@
       </div>
     </section>
 
-    <!-- 4. HALAMAN RUMUSAN & STATISTIK -->
+    <!-- 4. HALAMAN RUMUSAN & STATISTIK (DENGAN BUTANG KELAS MERAH / HIJAU) -->
     <section id="tab-statistik" class="tab-content hidden space-y-6">
       <div class="bg-white p-4 rounded-2xl border shadow-sm flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -468,6 +468,7 @@
           </div>
         </div>
 
+        <!-- Mod Sekolah -->
         <div id="statSeksyenSekolah" class="space-y-4">
           <div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl">
             <h4 class="text-xs font-extrabold uppercase text-amber-900 mb-1 flex items-center gap-1.5">
@@ -489,10 +490,12 @@
           </div>
         </div>
 
+        <!-- Mod Kelas (Dengan Butang Merah/Hijau & Cap Masa) -->
         <div id="statSeksyenKelas" class="hidden">
-          <div id="gridStatistikKelasStat" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+          <div id="gridStatistikKelasStat" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
 
+        <!-- Mod Individu -->
         <div id="statSeksyenIndividu" class="hidden space-y-4">
           <div class="flex flex-wrap gap-2">
             <select id="statIndividuFilterKelas" onchange="kemaskiniPilihanMuridIndividu()" class="border rounded-xl p-2 text-xs font-semibold bg-slate-50 flex-1">
@@ -601,7 +604,7 @@
       </div>
     </section>
 
-    <!-- 6. HALAMAN ADMIN (DAFTAR WAJAH, GALERI MURID, IMPORT PUKAL) -->
+    <!-- 6. HALAMAN ADMIN -->
     <section id="tab-admin" class="tab-content hidden space-y-6">
       <div class="max-w-5xl mx-auto space-y-4">
         
@@ -1315,20 +1318,97 @@
           });
         }
 
-        // Pecahan Kelas
+        // Pecahan Kelas dengan Butang Merah/Hijau & Tarikh Kemaskini
         const gridKelas = document.getElementById('gridStatistikKelasStat');
         gridKelas.innerHTML = '';
         if (!dataStatistikMaster.pecahanKelas || dataStatistikMaster.pecahanKelas.length === 0) {
           gridKelas.innerHTML = '<div class="col-span-full p-4 text-center text-slate-400 text-xs">Tiada rekod kelas ditemui.</div>';
         } else {
           dataStatistikMaster.pecahanKelas.forEach(k => {
+            const peratusNum = parseFloat(k.peratus);
+            const badgeWarnaPeratus = peratusNum >= 80 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800';
+
+            let htmlStatusButang = '';
+            if (k.lengkapKemaskini) {
+              htmlStatusButang = `
+                <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs">
+                  <span class="flex items-center gap-1.5 font-bold text-emerald-800">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm animate-pulse"></span>
+                    Sebab Telah Dikemaskini
+                  </span>
+                  <span class="text-[10px] text-emerald-700 font-semibold truncate max-w-[150px]" title="${k.masaTerkini}">
+                    ${k.masaTerkini ? 'Kini: ' + k.masaTerkini : '100% Hadir'}
+                  </span>
+                </div>`;
+            } else {
+              const belumCount = k.senaraiTidakHadir.filter(m => !m.telahKemaskini).length;
+              htmlStatusButang = `
+                <div class="p-2.5 rounded-xl bg-rose-50 border border-rose-300 flex items-center justify-between text-xs">
+                  <span class="flex items-center gap-1.5 font-bold text-rose-800">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rose-600 shadow-sm animate-ping"></span>
+                    Belum Dikemaskini (${belumCount} Murid)
+                  </span>
+                  <span class="px-2 py-0.5 rounded-md bg-rose-600 text-white font-extrabold text-[10px] uppercase shadow-xs">
+                    Perlu Tindakan
+                  </span>
+                </div>`;
+            }
+
+            let htmlSenaraiTidakHadirKelas = '';
+            if (!k.senaraiTidakHadir || k.senaraiTidakHadir.length === 0) {
+              htmlSenaraiTidakHadirKelas = '<p class="text-[11px] text-emerald-600 font-medium text-center py-2 bg-emerald-50/50 rounded-lg">Semua murid hadir!</p>';
+            } else {
+              htmlSenaraiTidakHadirKelas = k.senaraiTidakHadir.map(m => {
+                let badgeSebabWarna = "bg-slate-100 text-slate-700";
+                if (m.sebab === "Tanpa Kenyataan/Ponteng") badgeSebabWarna = "bg-rose-100 text-rose-800";
+                else if (m.sebab === "Apung (48 jam)") badgeSebabWarna = "bg-amber-100 text-amber-800";
+                else if (m.sebab === "Sakit/Demam") badgeSebabWarna = "bg-blue-100 text-blue-800";
+
+                const infoMasa = m.masaKemaskini ? `<span class="text-[9px] text-slate-400 block">${m.masaKemaskini}</span>` : '';
+
+                return `
+                  <div class="p-2 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                      <p class="font-bold text-slate-800 text-xs truncate">${m.nama}</p>
+                      <div class="flex items-center gap-1 mt-0.5">
+                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold ${badgeSebabWarna}">${m.sebab}</span>
+                        ${infoMasa}
+                      </div>
+                    </div>
+                    <button onclick="bukaModalSebab('${m.nama.replace(/'/g, "\\'")}', '${m.tingkatan}', '${m.sebab || ""}')" class="shrink-0 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[10px] shadow-xs transition">
+                      Catat Sebab
+                    </button>
+                  </div>`;
+              }).join('');
+            }
+
             gridKelas.innerHTML += `
-              <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex justify-between items-center">
+              <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col justify-between space-y-3">
                 <div>
-                  <p class="font-bold text-slate-800 text-xs">${k.kelas}</p>
-                  <p class="text-[11px] text-slate-500">${k.hadir} / ${k.enrolmen} Kehadiran</p>
+                  <div class="flex justify-between items-center mb-2">
+                    <div>
+                      <h4 class="text-base font-extrabold text-slate-800 tracking-wide">${k.kelas}</h4>
+                      <p class="text-[11px] text-slate-500 font-medium">${k.hadir} / ${k.enrolmen} Kehadiran</p>
+                    </div>
+                    <span class="text-xs font-black px-2.5 py-1 rounded-lg ${badgeWarnaPeratus}">
+                      ${k.peratus}%
+                    </span>
+                  </div>
+
+                  <div class="mb-3">
+                    ${htmlStatusButang}
+                  </div>
+
+                  <div class="border-t pt-2.5">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase mb-1.5 flex justify-between">
+                      <span>Senarai Tidak Hadir (${k.totalTidakHadir})</span>
+                      <span class="text-slate-400 font-normal">Klik untuk kemaskini</span>
+                    </p>
+                    <div class="space-y-1.5 max-h-48 overflow-y-auto pr-0.5">
+                      ${htmlSenaraiTidakHadirKelas}
+                    </div>
+                  </div>
                 </div>
-                <span class="text-xs font-black px-2 py-0.5 rounded ${parseFloat(k.peratus) >= 80 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${k.peratus}%</span>
               </div>`;
           });
         }
@@ -1429,7 +1509,7 @@
         const d = await res.json();
         if (d.success) {
           tutupModalSebab();
-          janaRumusanStatistik();
+          await janaRumusanStatistik();
           alert(`Sebab ketidakhadiran bagi ${muridSedangSebab.nama} berjaya dikemaskini.`);
         }
       } catch (err) { alert(err.message); } finally { tutupLoading(); }
@@ -1925,7 +2005,7 @@
         // Langkah 2: Kiri
         stepBadge.innerText = "LANGKAH 2 DARI 3";
         feedback.innerText = "Pusing Wajah Sedikit ke KIRI ⬅️";
-        ikonArah.innerText = "⬅️";
+        ikonArah.innerText = "⬅️️";
 
         let descKiri = await tungguDanTangkapSudut('kiri', "Pusing Wajah Sedikit ke KIRI ⬅️");
         collectedDescriptors.push(descKiri.descriptor);
@@ -1944,7 +2024,7 @@
         // Langkah 3: Kanan
         stepBadge.innerText = "LANGKAH 3 DARI 3";
         feedback.innerText = "Pusing Wajah Sedikit ke KANAN ➡️";
-        ikonArah.innerText = "➡️";
+        ikonArah.innerText = "➡️️";
 
         let descKanan = await tungguDanTangkapSudut('kanan', "Pusing Wajah Sedikit ke KANAN ➡️");
         collectedDescriptors.push(descKanan.descriptor);
