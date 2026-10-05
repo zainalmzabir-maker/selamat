@@ -270,7 +270,7 @@
           </button>
         </div>
 
-        <!-- ==================== POP-UP TOAST PENGECAMAN (BESAR & HIJAU TERANG) ==================== -->
+        <!-- ==================== POP-UP TOAST PENGECAMAN ==================== -->
         <div id="toastAlert" class="absolute top-4 left-1/2 -translate-x-1/2 md:top-6 z-50 transform transition-all duration-300 -translate-y-36 opacity-0 bg-emerald-600 text-white shadow-2xl rounded-2xl p-4 md:p-5 max-w-lg w-[94%] flex items-center gap-4 border-2 border-emerald-300 pointer-events-none">
           <div class="bg-white text-emerald-600 rounded-2xl p-3 shrink-0 shadow-md">
             <svg class="w-8 h-8 md:w-9 md:h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
@@ -654,7 +654,7 @@
     let senaraiPukalPratonton = [];
     let muridDipilihUntukAktiviti = new Set();
     let muridTelahHadirAktivitiSemasa = new Set();
-    let muridTelahDaftarMasukHariIni = new Set(); // Mengingati murid yang telah hadir hari ini
+    let muridTelahDaftarMasukHariIni = new Set();
     let aktivitiSemasaDipilih = null;
 
     let senaraiMuridTidakHadirMaster = [];
@@ -669,7 +669,18 @@
     let cooldownScan = new Map();
     let tabSasaranAdmin = null;
     let adminDisahkan = false;
-    let sedangDaftarWajah = false; // Kunci Single-Shot
+    let sedangDaftarWajah = false;
+
+    // ==================== FUNGSI BANTUAN EKSTRAK KOTAK DETECTION (BEBAS RALAT) ====================
+    function dapatkanBoxDariDetection(det) {
+      if (!det) return null;
+      if (det.detection && det.detection.box) return det.detection.box;
+      if (det.box) return det.box;
+      if (typeof det.x === 'number' && typeof det.y === 'number' && typeof det.width === 'number' && typeof det.height === 'number') {
+        return det;
+      }
+      return null;
+    }
 
     // ==================== ENJIN AUDIO (WEB AUDIO SYNTHESIZER) ====================
     let audioCtx = null;
@@ -838,7 +849,6 @@
 
         document.getElementById('labelKiraanTidakHadir').innerText = d.jumlahTidakHadir + " Orang";
 
-        // Segerakkan senarai murid yang sudah hadir
         if (d.senaraiMasihDiSekolah) {
           d.senaraiMasihDiSekolah.forEach(m => muridTelahDaftarMasukHariIni.add(m.nama));
         }
@@ -1055,20 +1065,27 @@
             if (detection) {
               const resized = faceapi.resizeResults(detection, { width: video.videoWidth, height: video.videoHeight });
               const padanan = faceMatcher.findBestMatch(detection.descriptor);
+              const box = dapatkanBoxDariDetection(resized);
 
-              if (padanan.label.includes(muridSusulanSemasa.nama)) {
-                new faceapi.draw.DrawBox(resized.box, {
-                  label: `Disahkan: ${muridSusulanSemasa.nama}`,
-                  boxColor: '#10b981'
-                }).draw(canvas);
-                msg.innerHTML = `<span class="text-emerald-600 font-bold">✓ Wajah Disahkan Berpadanan!</span>`;
-                mainBunyiHadir();
-              } else {
-                new faceapi.draw.DrawBox(resized.box, {
-                  label: padanan.label !== 'unknown' ? padanan.label : 'Wajah Lain',
-                  boxColor: '#f59e0b'
-                }).draw(canvas);
-                msg.innerHTML = `<span class="text-amber-600">Wajah dikesan (${padanan.label})</span>`;
+              if (box) {
+                if (padanan.label.includes(muridSusulanSemasa.nama)) {
+                  try {
+                    new faceapi.draw.DrawBox(box, {
+                      label: `Disahkan: ${muridSusulanSemasa.nama}`,
+                      boxColor: '#10b981'
+                    }).draw(canvas);
+                  } catch (e) {}
+                  msg.innerHTML = `<span class="text-emerald-600 font-bold">✓ Wajah Disahkan Berpadanan!</span>`;
+                  mainBunyiHadir();
+                } else {
+                  try {
+                    new faceapi.draw.DrawBox(box, {
+                      label: padanan.label !== 'unknown' ? padanan.label : 'Wajah Lain',
+                      boxColor: '#f59e0b'
+                    }).draw(canvas);
+                  } catch (e) {}
+                  msg.innerHTML = `<span class="text-amber-600">Wajah dikesan (${padanan.label})</span>`;
+                }
               }
             }
           }, 500);
@@ -1377,24 +1394,25 @@
 
             resized.forEach(d => {
               const padanan = faceMatcher.findBestMatch(d.descriptor);
-              const kotak = d.detection.box;
+              const kotak = dapatkanBoxDariDetection(d);
+              if (!kotak) return;
 
               if (padanan.label !== 'unknown') {
                 const [nama, tingkatan] = padanan.label.split(' | ');
 
-                // 1. Lukis kotak sempadan hijau terang sekeliling muka
+                // 1. Kotak sempadan hijau
                 ctx.lineWidth = 4;
                 ctx.strokeStyle = '#10b981';
                 ctx.strokeRect(kotak.x, kotak.y, kotak.width, kotak.height);
 
-                // 2. Lukis Lencana Hijau Gelap Bersepadu di Atas Kotak Wajah
+                // 2. Lencana Hijau Gelap Bersepadu
                 const teksNota = (jenisMod === 'Keluar') ? 'TELAH DAFTAR KELUAR' : 'TELAH DAFTAR MASUK';
                 const labelNama = `${nama} (${tingkatan})`;
                 const badgeW = Math.max(kotak.width + 10, 240);
                 const badgeH = 50;
                 const badgeY = Math.max(4, kotak.y - badgeH - 6);
 
-                ctx.fillStyle = 'rgba(6, 78, 59, 0.92)'; // Emerald gelap kontras
+                ctx.fillStyle = 'rgba(6, 78, 59, 0.92)';
                 ctx.beginPath();
                 if (ctx.roundRect) {
                   ctx.roundRect(kotak.x, badgeY, badgeW, badgeH, 10);
@@ -1403,13 +1421,13 @@
                 }
                 ctx.fill();
 
-                // 3. Tulis Nama Murid (Putih Bold)
+                // 3. Nama Murid
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 14px sans-serif';
                 ctx.fillText(labelNama, kotak.x + 10, badgeY + 20);
 
-                // 4. NOTA BESAR BERWARNA HIJAU TERANG (PENEGASAN JELAS KEPADA PENGGUNA)
-                ctx.fillStyle = '#34d399'; // Emerald-400 Hijau Terang
+                // 4. Nota Besar Berwarna Hijau Terang
+                ctx.fillStyle = '#34d399';
                 ctx.font = '900 15px sans-serif';
                 ctx.fillText(`✓ ${teksNota}`, kotak.x + 10, badgeY + 41);
 
@@ -1418,10 +1436,12 @@
                 ctx.lineWidth = 3;
                 ctx.strokeStyle = '#ef4444';
                 ctx.strokeRect(kotak.x, kotak.y, kotak.width, kotak.height);
-                new faceapi.draw.DrawBox(kotak, {
-                  label: 'Tidak Dikenali',
-                  boxColor: '#ef4444'
-                }).draw(canvas);
+                try {
+                  new faceapi.draw.DrawBox(kotak, {
+                    label: 'Tidak Dikenali',
+                    boxColor: '#ef4444'
+                  }).draw(canvas);
+                } catch (e) {}
               }
             });
           }, 600);
@@ -1536,7 +1556,6 @@
         document.getElementById('kiraanHadirAktivitiLabel').innerText = muridTelahHadirAktivitiSemasa.size;
       }
 
-      // Dialog pop-up besar dengan nota hijau serta-merta
       tunjukToast(nama, "Sedang Merekodkan...", jenis);
 
       try {
@@ -1716,6 +1735,7 @@
       }, 350);
     }
 
+    // ==================== TANGKAP DAN DAFTAR WAJAH (DENGAN PEMBAIKAN BOX) ====================
     async function tangkapDanDaftarWajah() {
       if (sedangDaftarWajah) return;
 
@@ -1740,7 +1760,7 @@
       btn.disabled = true;
       btn.classList.add('opacity-50', 'cursor-not-allowed');
 
-      tunjukLoading("Mengambil & Mengimbas Wajah", `Gambar wajah ${nama} telah diambil. Sila bertenang, AI sedang menganalisis ciri wajah dan menyimpan ke pangkalan data Google Sheets...`);
+      tunjukLoading("Mengambil & Mengimbas Wajah", `Gambar wajah ${nama} telah diambil. Sila bertenang, AI sedang menganalisis ciri wajah dan menyimpan ke Google Sheets...`);
       msg.innerText = "Sedang mengimbas titik wajah murid...";
 
       try {
@@ -1758,15 +1778,27 @@
           return;
         }
 
+        // Lukis kotak pengesahan pada canvas menggunakan fungsi selamat
         const canvas = document.getElementById('canvasDaftar');
         selaraskanDimensiDaftar();
         const resized = faceapi.resizeResults(detection, { width: video.videoWidth, height: video.videoHeight });
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        new faceapi.draw.DrawBox(resized.box, {
-          label: `${nama} (Dikesan)`,
-          boxColor: '#10b981'
-        }).draw(canvas);
+
+        // Ekstrak kotak dengan selamat (elakkan ralat Box.constructor)
+        const box = dapatkanBoxDariDetection(resized);
+        if (box) {
+          try {
+            new faceapi.draw.DrawBox(box, {
+              label: `${nama} (Dikesan)`,
+              boxColor: '#10b981'
+            }).draw(canvas);
+          } catch (drawErr) {
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#10b981';
+            ctx.strokeRect(box.x, box.y, box.width, box.height);
+          }
+        }
 
         tunjukLoading("Menyimpan ke Google Sheets", `Wajah ${nama} dikesan! Sedang merekodkan ke tab Murid di Google Sheets...`);
 
@@ -1802,8 +1834,8 @@
         }
       } catch (err) {
         tutupLoading();
-        msg.innerText = "Ralat sambungan: " + err.message;
-        alert("Ralat sambungan: " + err.message);
+        msg.innerText = "Ralat operasi: " + err.message;
+        alert("Ralat operasi: " + err.message);
       } finally {
         sedangDaftarWajah = false;
         btn.disabled = false;
